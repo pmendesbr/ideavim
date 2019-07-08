@@ -25,10 +25,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.PermanentInstallationID;
-import com.intellij.openapi.components.BaseComponent;
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.components.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.keymap.Keymap;
@@ -98,46 +95,6 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
 
   private static final Logger LOG = Logger.getInstance(VimPlugin.class);
 
-  @NotNull private final MotionGroup motion;
-  @NotNull private final ChangeGroup change;
-  @NotNull private final CommandGroup command;
-  @NotNull private final MarkGroup mark;
-  @NotNull private final RegisterGroup register;
-  @NotNull private final FileGroup file;
-  @NotNull private final SearchGroup search;
-  @NotNull private final ProcessGroup process;
-  @NotNull private final MacroGroup macro;
-  @NotNull private final DigraphGroup digraph;
-  @NotNull private final HistoryGroup history;
-  @NotNull private final KeyGroup key;
-  @NotNull private final WindowGroup window;
-  @NotNull private final EditorGroup editor;
-  @NotNull private final VisualMotionGroup visualMotion;
-  @NotNull private final YankGroup yank;
-  @NotNull private final PutGroup put;
-
-  public VimPlugin() {
-    motion = new MotionGroup();
-    change = new ChangeGroup();
-    command = new CommandGroup();
-    mark = new MarkGroup();
-    register = new RegisterGroup();
-    file = new FileGroup();
-    search = new SearchGroup();
-    process = new ProcessGroup();
-    macro = new MacroGroup();
-    digraph = new DigraphGroup();
-    history = new HistoryGroup();
-    key = new KeyGroup();
-    window = new WindowGroup();
-    editor = new EditorGroup();
-    visualMotion = new VisualMotionGroup();
-    yank = new YankGroup();
-    put = new PutGroup();
-
-    LOG.debug("VimPlugin ctr");
-  }
-
   @NotNull
   @Override
   public String getComponentName() {
@@ -188,21 +145,9 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
     }
   }
 
-  @Override
-  public Element getState() {
-    LOG.debug("Saving state");
-
-    final Element element = new Element("ideavim");
-    // Save whether the plugin is enabled or not
-    final Element state = new Element("state");
-    state.setAttribute("version", Integer.toString(STATE_VERSION));
-    state.setAttribute("enabled", Boolean.toString(enabled));
-    element.addContent(state);
-
-    key.saveData(element);
-    editor.saveData(element);
-
-    return element;
+  @NotNull
+  public static MotionGroup getMotion() {
+    return ServiceManager.getService(MotionGroup.class);
   }
 
   /**
@@ -254,88 +199,100 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
   }
 
   @NotNull
-  public static MotionGroup getMotion() {
-    return getInstance().motion;
-  }
-
-  @NotNull
   public static ChangeGroup getChange() {
-    return getInstance().change;
+    return ServiceManager.getService(ChangeGroup.class);
   }
 
   @NotNull
   public static CommandGroup getCommand() {
-    return getInstance().command;
+    return ServiceManager.getService(CommandGroup.class);
   }
 
   @NotNull
   public static MarkGroup getMark() {
-    return getInstance().mark;
+    return ServiceManager.getService(MarkGroup.class);
   }
 
   @NotNull
   public static RegisterGroup getRegister() {
-    return getInstance().register;
+    return ServiceManager.getService(RegisterGroup.class);
   }
 
   @NotNull
   public static FileGroup getFile() {
-    return getInstance().file;
+    return ServiceManager.getService(FileGroup.class);
   }
 
   @NotNull
   public static SearchGroup getSearch() {
-    return getInstance().search;
+    return ServiceManager.getService(SearchGroup.class);
   }
 
   @NotNull
   public static ProcessGroup getProcess() {
-    return getInstance().process;
+    return ServiceManager.getService(ProcessGroup.class);
   }
 
   @NotNull
   public static MacroGroup getMacro() {
-    return getInstance().macro;
+    return ServiceManager.getService(MacroGroup.class);
   }
 
   @NotNull
   public static DigraphGroup getDigraph() {
-    return getInstance().digraph;
+    return ServiceManager.getService(DigraphGroup.class);
   }
 
   @NotNull
   public static HistoryGroup getHistory() {
-    return getInstance().history;
+    return ServiceManager.getService(HistoryGroup.class);
   }
 
   @NotNull
   public static KeyGroup getKey() {
-    return getInstance().key;
+    return ServiceManager.getService(KeyGroup.class);
   }
 
   @NotNull
   public static WindowGroup getWindow() {
-    return getInstance().window;
+    return ServiceManager.getService(WindowGroup.class);
   }
 
   @NotNull
   public static EditorGroup getEditor() {
-    return getInstance().editor;
+    return ServiceManager.getService(EditorGroup.class);
   }
 
   @NotNull
   public static VisualMotionGroup getVisualMotion() {
-    return getInstance().visualMotion;
+    return ServiceManager.getService(VisualMotionGroup.class);
   }
 
   @NotNull
   public static YankGroup getYank() {
-    return getInstance().yank;
+    return ServiceManager.getService(YankGroup.class);
   }
 
   @NotNull
   public static PutGroup getPut() {
-    return getInstance().put;
+    return ServiceManager.getService(PutGroup.class);
+  }
+
+  @Override
+  public Element getState() {
+    LOG.debug("Saving state");
+
+    final Element element = new Element("ideavim");
+    // Save whether the plugin is enabled or not
+    final Element state = new Element("state");
+    state.setAttribute("version", Integer.toString(STATE_VERSION));
+    state.setAttribute("enabled", Boolean.toString(enabled));
+    element.addContent(state);
+
+    getKey().saveData(element);
+    getEditor().saveData(element);
+
+    return element;
   }
 
   @NotNull
@@ -444,17 +401,17 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
       if (SystemInfo.isMac) {
         final MacKeyRepeat keyRepeat = MacKeyRepeat.getInstance();
         final Boolean enabled = keyRepeat.isEnabled();
-        final Boolean isKeyRepeat = editor.isKeyRepeat();
+        final Boolean isKeyRepeat = getEditor().isKeyRepeat();
         if ((enabled == null || !enabled) && (isKeyRepeat == null || isKeyRepeat)) {
           if (Messages.showYesNoDialog("Do you want to enable repeating keys in Mac OS X on press and hold?\n\n" +
                                        "(You can do it manually by running 'defaults write -g " +
                                        "ApplePressAndHoldEnabled 0' in the console).", IDEAVIM_NOTIFICATION_TITLE,
                                        Messages.getQuestionIcon()) == Messages.YES) {
-            editor.setKeyRepeat(true);
+            getEditor().setKeyRepeat(true);
             keyRepeat.setEnabled(true);
           }
           else {
-            editor.setKeyRepeat(false);
+            getEditor().setKeyRepeat(false);
           }
         }
       }
@@ -511,12 +468,12 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
 
     if (previousStateVersion > 0 && previousStateVersion < 5) {
       // Migrate settings from 4 to 5 version
-      mark.readData(element);
-      register.readData(element);
-      search.readData(element);
-      history.readData(element);
+      getMark().readData(element);
+      getRegister().readData(element);
+      getSearch().readData(element);
+      getHistory().readData(element);
     }
-    key.readData(element);
-    editor.readData(element);
+    getKey().readData(element);
+    getEditor().readData(element);
   }
 }
