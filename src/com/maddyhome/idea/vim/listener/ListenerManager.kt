@@ -152,6 +152,11 @@ object VimListenerManager {
       OptionsManager.number.addOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.relativenumber.addOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.clipboard.addOptionChangeListener(VimPlugin.getRegister().clipboardOptionListener)
+      OptionsManager.hlsearch.addOptionChangeListener(VimPlugin.getSearch().hlSearchOptionListener)
+      OptionsManager.ignorecase.addOptionChangeListener(VimPlugin.getSearch().updateHighlightsIfVisible)
+      // It appears that when changing smartcase, Vim only redraws the highlights when the screen is redrawn. We can't
+      // reliably copy that, so do the most intuitive thing
+      OptionsManager.smartcase.addOptionChangeListener(VimPlugin.getSearch().updateHighlightsIfVisible)
 
       EventFacade.getInstance().addEditorFactoryListener(VimEditorFactoryListener, ApplicationManager.getApplication())
     }
@@ -162,6 +167,9 @@ object VimListenerManager {
       OptionsManager.number.removeOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.relativenumber.removeOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.clipboard.removeOptionChangeListener(VimPlugin.getRegister().clipboardOptionListener)
+      OptionsManager.hlsearch.removeOptionChangeListener(VimPlugin.getSearch().hlSearchOptionListener)
+      OptionsManager.ignorecase.removeOptionChangeListener(VimPlugin.getSearch().updateHighlightsIfVisible)
+      OptionsManager.smartcase.removeOptionChangeListener(VimPlugin.getSearch().updateHighlightsIfVisible)
 
       EventFacade.getInstance().removeEditorFactoryListener(VimEditorFactoryListener)
     }

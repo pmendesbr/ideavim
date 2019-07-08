@@ -57,24 +57,34 @@ import java.util.List;
 import java.util.*;
 
 public class SearchGroup {
-  public SearchGroup() {
-    final OptionsManager options = OptionsManager.INSTANCE;
-    options.getHlsearch().addOptionChangeListener(event -> {
-      resetShowSearchHighlight();
+  private static final int RE_LAST = 1;
+  private static final int RE_SEARCH = 2;
+  private static final int RE_SUBST = 3;
+  private static final int DIR_FORWARDS = 1;
+  private static final int DIR_BACKWARDS = -1;
+  private static final Logger logger = Logger.getInstance(SearchGroup.class.getName());
+  @Nullable private String lastSearch;
+  @Nullable private String lastPattern;
+  @Nullable private String lastSubstitute;
+  @Nullable private String lastReplace;
+  @Nullable private String lastOffset;
+  private boolean lastIgnoreSmartCase;
+  private int lastDir;
+  private boolean showSearchHighlight = OptionsManager.INSTANCE.getHlsearch().isSet();
+  public final OptionChangeListener hlSearchOptionListener = event -> {
+    resetShowSearchHighlight();
+    forceUpdateSearchHighlights();
+  };
+  public final OptionChangeListener updateHighlightsIfVisible = event -> {
+    if (showSearchHighlight) {
       forceUpdateSearchHighlights();
-    });
-
-    final OptionChangeListener updateHighlightsIfVisible = event -> {
-      if (showSearchHighlight) {
-        forceUpdateSearchHighlights();
-      }
-    };
-    options.getIgnorecase().addOptionChangeListener(updateHighlightsIfVisible);
-
-    // It appears that when changing smartcase, Vim only redraws the highlights when the screen is redrawn. We can't
-    // reliably copy that, so do the most intuitive thing
-    options.getSmartcase().addOptionChangeListener(updateHighlightsIfVisible);
-  }
+    }
+  };
+  private boolean do_all = false; /* do multiple substitutions per line */
+  private boolean do_ask = false; /* ask for confirmation */
+  private boolean do_error = true; /* if false, ignore errors */
+  //private boolean do_print = false; /* print last line with subs. */
+  private char do_ic = 0; /* ignore case flag */
 
   public void turnOn() {
     updateSearchHighlights();
@@ -1399,28 +1409,4 @@ public class SearchGroup {
     QUIT,
     SUBSTITUTE_ALL,
   }
-
-  @Nullable private String lastSearch;
-  @Nullable private String lastPattern;
-  @Nullable private String lastSubstitute;
-  @Nullable private String lastReplace;
-  @Nullable private String lastOffset;
-  private boolean lastIgnoreSmartCase;
-  private int lastDir;
-  private boolean showSearchHighlight = OptionsManager.INSTANCE.getHlsearch().isSet();
-
-  private boolean do_all = false; /* do multiple substitutions per line */
-  private boolean do_ask = false; /* ask for confirmation */
-  private boolean do_error = true; /* if false, ignore errors */
-  //private boolean do_print = false; /* print last line with subs. */
-  private char do_ic = 0; /* ignore case flag */
-
-  private static final int RE_LAST = 1;
-  private static final int RE_SEARCH = 2;
-  private static final int RE_SUBST = 3;
-
-  private static final int DIR_FORWARDS = 1;
-  private static final int DIR_BACKWARDS = -1;
-
-  private static final Logger logger = Logger.getInstance(SearchGroup.class.getName());
 }
