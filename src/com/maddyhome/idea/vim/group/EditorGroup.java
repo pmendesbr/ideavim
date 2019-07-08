@@ -61,9 +61,11 @@ public class EditorGroup {
 
   private boolean isSmartJoinNotified = false;
 
+  public final NumberOptionListener numberOptionListener = new NumberOptionListener();
+
   private final CaretListener myLineNumbersCaretListener = new CaretListener() {
     @Override
-    public void caretPositionChanged(CaretEvent e) {
+    public void caretPositionChanged(@NotNull CaretEvent e) {
       updateLineNumbers(e.getEditor());
     }
   };
@@ -111,7 +113,7 @@ public class EditorGroup {
     editor.getSettings().setLineNumbersShown(UserDataManager.getVimLineNumbersShown(editor));
   }
 
-  private static void updateLineNumbers(@NotNull Editor editor) {
+  private void updateLineNumbers(@NotNull Editor editor) {
     if (!EditorHelper.isFileEditor(editor)) {
       return;
     }
@@ -252,10 +254,7 @@ public class EditorGroup {
     DocumentManager.getInstance().removeListeners(editor.getDocument());
   }
 
-  public static class NumberChangeListener implements OptionChangeListener {
-    public static NumberChangeListener INSTANCE = new NumberChangeListener();
-    private NumberChangeListener() {
-    }
+  public class NumberOptionListener implements OptionChangeListener {
     @Override
     public void valueChange(OptionChangeEvent event) {
       for (Editor editor : EditorFactory.getInstance().getAllEditors()) {

@@ -44,7 +44,6 @@ import com.maddyhome.idea.vim.VimTypedActionHandler
 import com.maddyhome.idea.vim.command.CommandState
 import com.maddyhome.idea.vim.ex.ExOutputModel
 import com.maddyhome.idea.vim.group.ChangeGroup
-import com.maddyhome.idea.vim.group.EditorGroup
 import com.maddyhome.idea.vim.group.FileGroup
 import com.maddyhome.idea.vim.group.MarkGroup
 import com.maddyhome.idea.vim.group.MotionGroup
@@ -150,8 +149,8 @@ object VimListenerManager {
       val typedAction = EditorActionManager.getInstance().typedAction
       EventFacade.getInstance().setupTypedActionHandler(VimTypedActionHandler(typedAction.rawHandler))
 
-      OptionsManager.number.addOptionChangeListener(EditorGroup.NumberChangeListener.INSTANCE)
-      OptionsManager.relativenumber.addOptionChangeListener(EditorGroup.NumberChangeListener.INSTANCE)
+      OptionsManager.number.addOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
+      OptionsManager.relativenumber.addOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.clipboard.addOptionChangeListener(VimPlugin.getRegister().clipboardOptionListener)
 
       EventFacade.getInstance().addEditorFactoryListener(VimEditorFactoryListener, ApplicationManager.getApplication())
@@ -160,8 +159,8 @@ object VimListenerManager {
     fun disable() {
       EventFacade.getInstance().restoreTypedActionHandler()
 
-      OptionsManager.number.removeOptionChangeListener(EditorGroup.NumberChangeListener.INSTANCE)
-      OptionsManager.relativenumber.removeOptionChangeListener(EditorGroup.NumberChangeListener.INSTANCE)
+      OptionsManager.number.removeOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
+      OptionsManager.relativenumber.removeOptionChangeListener(VimPlugin.getEditor().numberOptionListener)
       OptionsManager.clipboard.removeOptionChangeListener(VimPlugin.getRegister().clipboardOptionListener)
 
       EventFacade.getInstance().removeEditorFactoryListener(VimEditorFactoryListener)
