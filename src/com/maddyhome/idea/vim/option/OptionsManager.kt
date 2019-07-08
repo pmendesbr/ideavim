@@ -404,6 +404,8 @@ object SelectModeOptionData {
 object ClipboardOptionsData {
   const val name = "clipboard"
   const val abbr = "cb"
+  const val unnamed = "unnamed"
+  const val unnamedplus = "unnamedplus"
 
   const val ideaput = "ideaput"
 }

@@ -51,8 +51,10 @@ import com.maddyhome.idea.vim.common.Register;
 import com.maddyhome.idea.vim.common.TextRange;
 import com.maddyhome.idea.vim.helper.EditorHelper;
 import com.maddyhome.idea.vim.helper.StringHelper;
+import com.maddyhome.idea.vim.option.ClipboardOptionsData;
 import com.maddyhome.idea.vim.option.ListOption;
-import com.maddyhome.idea.vim.option.OptionsManager;
+import com.maddyhome.idea.vim.option.OptionChangeEvent;
+import com.maddyhome.idea.vim.option.OptionChangeListener;
 import com.maddyhome.idea.vim.ui.ClipboardHandler;
 import kotlin.Pair;
 import org.jdom.Element;
@@ -85,23 +87,7 @@ public class RegisterGroup {
   private char recordRegister = 0;
   @Nullable private List<KeyStroke> recordList = null;
 
-  public RegisterGroup() {
-    final ListOption clipboardOption = OptionsManager.INSTANCE.getClipboard();
-    if (clipboardOption != null) {
-      clipboardOption.addOptionChangeListener(event -> {
-        if (clipboardOption.contains("unnamed")) {
-          defaultRegister = '*';
-        }
-        else if (clipboardOption.contains("unnamedplus")) {
-          defaultRegister = '+';
-        }
-        else {
-          defaultRegister = '"';
-        }
-        lastRegister = defaultRegister;
-      });
-    }
-  }
+  public final ClipboardOptionListener clipboardOptionListener = new ClipboardOptionListener();
 
   /**
    * Check to see if the last selected register can be written to.
@@ -509,6 +495,23 @@ public class RegisterGroup {
     }
     else {
       return SelectionType.CHARACTER_WISE;
+    }
+  }
+
+  public class ClipboardOptionListener implements OptionChangeListener {
+    @Override
+    public void valueChange(OptionChangeEvent event) {
+      final ListOption clipboardOption = (ListOption)event.getOption();
+      if (clipboardOption.contains(ClipboardOptionsData.unnamed)) {
+        defaultRegister = '*';
+      }
+      else if (clipboardOption.contains(ClipboardOptionsData.unnamedplus)) {
+        defaultRegister = '+';
+      }
+      else {
+        defaultRegister = '"';
+      }
+      lastRegister = defaultRegister;
     }
   }
 }
