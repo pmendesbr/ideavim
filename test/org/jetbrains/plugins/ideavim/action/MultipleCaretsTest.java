@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package org.jetbrains.plugins.ideavim.action;
@@ -1204,44 +1204,6 @@ public class MultipleCaretsTest extends VimTestCase {
                    "ab<caret>cde\n");
     myFixture.checkResult("abcde<caret> abcde\n" +
                           "abcde<caret> abcde\n");
-  }
-
-  public void testDeleteLineAction() {
-    typeTextInFile(parseKeys("d3d"),
-                   "abc<caret>de\n" +
-                   "abcde\n" +
-                   "abcde\n" +
-                   "abcde\n" +
-                   "ab<caret>cde\n" +
-                   "abcde\n" +
-                   "abcde\n");
-    myFixture.checkResult("<caret>abcde\n");
-  }
-
-  public void testDeleteMotionAction() {
-    typeTextInFile(parseKeys("dt)"),
-                   "public class Foo {\n" +
-                   "  int foo(int a, int b) {\n" +
-                   "    boolean bar = (a < 0 && (b < 0 || a > 0)<caret> || b != 0);\n" +
-                   "    if (bar<caret> || b != 0) {\n" +
-                   "      return a;\n" +
-                   "    }\n" +
-                   "    else {\n" +
-                   "      return b;\n" +
-                   "    }\n" +
-                   "  }\n" +
-                   "}\n");
-    myFixture.checkResult("public class Foo {\n" +
-                   "  int foo(int a, int b) {\n" +
-                   "    boolean bar = (a < 0 && (b < 0 || a > 0)<caret>);\n" +
-                   "    if (bar<caret>) {\n" +
-                   "      return a;\n" +
-                   "    }\n" +
-                   "    else {\n" +
-                   "      return b;\n" +
-                   "    }\n" +
-                   "  }\n" +
-                   "}\n");
   }
 
   public void testDeleteVisualAction() {

@@ -13,14 +13,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change;
 
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.handler.VimActionHandler;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class RedoAction extends VimCommandAction {
+public class RedoAction extends VimActionHandler.SingleExecution {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -51,14 +50,8 @@ public class RedoAction extends VimCommandAction {
     return Command.Type.OTHER_SELF_SYNCHRONIZED;
   }
 
-  @NotNull
   @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        return UndoRedoHelper.INSTANCE.redo(context);
-      }
-    };
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    return UndoRedoHelper.INSTANCE.redo(context);
   }
 }

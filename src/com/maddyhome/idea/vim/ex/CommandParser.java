@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.maddyhome.idea.vim.ex;
 
@@ -21,12 +21,13 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.extensions.ExtensionPointName;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.maddyhome.idea.vim.VimPlugin;
 import com.maddyhome.idea.vim.command.SelectionType;
 import com.maddyhome.idea.vim.common.Register;
 import com.maddyhome.idea.vim.common.TextRange;
-import com.maddyhome.idea.vim.ex.handler.*;
+import com.maddyhome.idea.vim.ex.handler.GotoLineHandler;
 import com.maddyhome.idea.vim.ex.range.AbstractRange;
 import com.maddyhome.idea.vim.group.HistoryGroup;
 import com.maddyhome.idea.vim.helper.MessageHelper;
@@ -34,6 +35,7 @@ import com.maddyhome.idea.vim.helper.Msg;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,68 +46,11 @@ import java.util.regex.Pattern;
 public class CommandParser {
   private static final int MAX_RECURSION = 100;
   private static final Pattern TRIM_WHITESPACE = Pattern.compile("[ \\t]*(.*)[ \\t\\n\\r]+", Pattern.DOTALL);
-  private final CommandHandler[] myHandlers = new CommandHandler[] {
-    new ActionListHandler(),
-    new AsciiHandler(),
-    new CmdFilterHandler(),
-    new CmdHandler(),
-    new CmdClearHandler(),
-    new CopyTextHandler(),
-    new DelCmdHandler(),
-    new DeleteLinesHandler(),
-    new DigraphHandler(),
-    new DumpLineHandler(),
-    new EditFileHandler(),
-    new ActionHandler(),
-    new EchoHandler(),
-    new ExitHandler(),
-    new FindClassHandler(),
-    new FindFileHandler(),
-    new FindSymbolHandler(),
-    new GotoCharacterHandler(),
-    //new GotoLineHandler(); - not needed here
-    new HelpHandler(),
-    new HistoryHandler(),
-    new JoinLinesHandler(),
-    new JumpsHandler(),
-    new LetHandler(),
-    new MapHandler(),
-    new MarkHandler(),
-    new MarksHandler(),
-    new MoveTextHandler(),
-    new NextFileHandler(),
-    new NoHLSearchHandler(),
-    new OnlyHandler(),
-    new PreviousFileHandler(),
-    new PromptFindHandler(),
-    new PromptReplaceHandler(),
-    new PutLinesHandler(),
-    new QuitHandler(),
-    new RedoHandler(),
-    new RegistersHandler(),
-    new RepeatHandler(),
-    new SelectFileHandler(),
-    new SelectFirstFileHandler(),
-    new SelectLastFileHandler(),
-    new SetHandler(),
-    new ShiftLeftHandler(),
-    new ShiftRightHandler(),
-    new SourceHandler(),
-    new SortHandler(),
-    new SplitHandler(),
-    new SubstituteHandler(),
-    new UndoHandler(),
-    new WriteAllHandler(),
-    new WriteHandler(),
-    new WriteNextFileHandler(),
-    new WritePreviousFileHandler(),
-    new WriteQuitHandler(),
-    new YankLinesHandler(),
-    new ShellHandler(),
-    new NextTabHandler(),
-    new PreviousTabHandler(),
-    new TabOnlyHandler()
-};
+  private final ExtensionPointName<CommandHandler> EX_COMMAND_EP = ExtensionPointName.create("IdeaVIM.vimExCommand");
+
+  private static class CommandParserHolder {
+    static final CommandParser INSTANCE = new CommandParser();
+  }
 
   /**
    * There is only one parser.
@@ -113,10 +58,7 @@ public class CommandParser {
    * @return The singleton instance
    */
   public synchronized static CommandParser getInstance() {
-    if (ourInstance == null) {
-      ourInstance = new CommandParser();
-    }
-    return ourInstance;
+    return CommandParserHolder.INSTANCE;
   }
 
   /**
@@ -129,14 +71,11 @@ public class CommandParser {
    * Registers all the supported Ex commands
    */
   public void registerHandlers() {
-    if (registered) return;
+    if (registered.getAndSet(true)) return;
 
-    for (CommandHandler handler : myHandlers) {
+    for (CommandHandler handler : EX_COMMAND_EP.getExtensions()) {
       handler.register();
     }
-
-    registered = true;
-    //logger.debug("root=" + root);
   }
 
   /**
@@ -648,9 +587,7 @@ public class CommandParser {
   }
 
   @NotNull private final CommandNode root = new CommandNode();
-  private boolean registered = false;
-
-  private static CommandParser ourInstance;
+  private AtomicBoolean registered = new AtomicBoolean(false);
 
   private enum State {
     START,

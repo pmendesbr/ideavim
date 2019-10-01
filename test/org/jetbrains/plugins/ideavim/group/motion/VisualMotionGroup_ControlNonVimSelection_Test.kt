@@ -13,17 +13,19 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 @file:Suppress("RemoveCurlyBracesFromTemplate")
 
 package org.jetbrains.plugins.ideavim.group.motion
 
+import com.intellij.openapi.editor.LogicalPosition
 import com.maddyhome.idea.vim.VimPlugin
 import com.maddyhome.idea.vim.command.CommandState
 import com.maddyhome.idea.vim.helper.StringHelper.parseKeys
 import com.maddyhome.idea.vim.helper.VimBehaviorDiffers
+import junit.framework.TestCase
 import org.jetbrains.plugins.ideavim.VimTestCase
 import org.jetbrains.plugins.ideavim.waitAndAssertMode
 

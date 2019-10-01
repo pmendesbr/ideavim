@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action;
@@ -32,23 +32,12 @@ import java.util.List;
 import java.util.Set;
 
 
-public class ResetModeAction extends VimCommandAction {
-  @NotNull
-  @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        KeyHandler.getInstance().fullReset(HelperKt.getTopLevelEditor(editor));
-        return true;
-      }
-    };
-  }
+public class ResetModeAction extends VimActionHandler.SingleExecution {
 
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
-    return MappingMode.NO;
+    return MappingMode.ALL;
   }
 
   @NotNull
@@ -61,5 +50,11 @@ public class ResetModeAction extends VimCommandAction {
   @Override
   public Command.Type getType() {
     return Command.Type.RESET;
+  }
+
+  @Override
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    KeyHandler.getInstance().fullReset(HelperKt.getTopLevelEditor(editor));
+    return true;
   }
 }

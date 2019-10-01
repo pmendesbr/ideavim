@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.group.copy
@@ -22,6 +22,7 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
+import com.maddyhome.idea.vim.action.motion.updown.MotionDownLess1FirstNonSpaceAction
 import com.maddyhome.idea.vim.command.Argument
 import com.maddyhome.idea.vim.command.SelectionType
 import com.maddyhome.idea.vim.common.TextRange
@@ -43,22 +44,29 @@ class YankGroup {
    * @return true if able to yank the text, false if not
    */
   fun yankMotion(editor: Editor, context: DataContext, count: Int, rawCount: Int, argument: Argument): Boolean {
-    val motion = argument.motion ?: return false
+    val motion = argument.motion
 
     val caretModel = editor.caretModel
+    if (caretModel.caretCount <= 0) return false
+
     val ranges = ArrayList<Pair<Int, Int>>(caretModel.caretCount)
-    val startOffsets = HashMap<Caret, Int>(caretModel.caretCount)
+
+    // This logic is from original vim
+    val startOffsets = if (argument.motion.action is MotionDownLess1FirstNonSpaceAction) null else HashMap<Caret, Int>(caretModel.caretCount)
+
     for (caret in caretModel.allCarets) {
-      val motionRange = MotionGroup.getMotionRange(editor, caret, context, count, rawCount, argument, true)
+      val motionRange = MotionGroup.getMotionRange(editor, caret, context, count, rawCount, argument)
         ?: continue
 
       assert(motionRange.size() == 1)
       ranges.add(motionRange.startOffset to motionRange.endOffset)
-      startOffsets[caret] = motionRange.normalize().startOffset
+      startOffsets?.put(caret, motionRange.normalize().startOffset)
     }
 
     val type = SelectionType.fromCommandFlags(motion.flags)
     val range = getTextRange(ranges, type)
+
+    if (range.size() == 0) return false;
 
     val selectionType = if (type == SelectionType.CHARACTER_WISE && range.isMultiple) SelectionType.BLOCK_WISE else type
     return yankRange(editor, range, selectionType, startOffsets)

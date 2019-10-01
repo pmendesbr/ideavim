@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.shift;
@@ -22,13 +22,11 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Argument;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.CommandFlags;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.handler.ChangeEditorActionHandler;
-import com.maddyhome.idea.vim.handler.VimActionHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,7 +38,7 @@ import java.util.Set;
 /**
  * @author Aleksey Lagoshin
  */
-public class AutoIndentMotionAction extends VimCommandAction {
+public class AutoIndentMotionAction extends ChangeEditorActionHandler.ForEachCaret {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -61,30 +59,28 @@ public class AutoIndentMotionAction extends VimCommandAction {
 
   @NotNull
   @Override
-  public EnumSet<CommandFlags> getFlags() {
-    return EnumSet.of(CommandFlags.FLAG_OP_PEND);
-  }
-
-  @NotNull
-  @Override
   public Argument.Type getArgumentType() {
     return Argument.Type.MOTION;
   }
 
   @NotNull
   @Override
-  protected VimActionHandler makeActionHandler() {
-    return new ChangeEditorActionHandler.ForEachCaret() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull Caret caret, @NotNull DataContext context, int count,
-                             int rawCount, @Nullable Argument argument) {
-        if (argument == null) {
-          return false;
-        }
+  public EnumSet<CommandFlags> getFlags() {
+    return EnumSet.of(CommandFlags.FLAG_DUPLICABLE_OPERATOR);
+  }
 
-        VimPlugin.getChange().autoIndentMotion(editor, caret, context, count, rawCount, argument);
-        return true;
-      }
-    };
+  @Override
+  public boolean execute(@NotNull Editor editor,
+                         @NotNull Caret caret,
+                         @NotNull DataContext context,
+                         int count,
+                         int rawCount,
+                         @Nullable Argument argument) {
+    if (argument == null) {
+      return false;
+    }
+
+    VimPlugin.getChange().autoIndentMotion(editor, caret, context, count, rawCount, argument);
+    return true;
   }
 }

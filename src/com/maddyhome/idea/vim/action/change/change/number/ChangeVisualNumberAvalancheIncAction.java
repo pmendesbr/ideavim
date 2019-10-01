@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.change.number;
@@ -22,12 +22,10 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.CommandFlags;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.group.visual.VimSelection;
-import com.maddyhome.idea.vim.handler.VimActionHandler;
 import com.maddyhome.idea.vim.handler.VisualOperatorActionHandler;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -37,24 +35,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-final public class ChangeVisualNumberAvalancheIncAction extends VimCommandAction {
-  @Contract(" -> new")
-  @NotNull
-  @Override
-  final protected VimActionHandler makeActionHandler() {
-    return new VisualOperatorActionHandler.ForEachCaret() {
-      @Override
-      public boolean executeAction(@NotNull Editor editor,
-                                      @NotNull Caret caret,
-                                      @NotNull DataContext context,
-                                      @NotNull Command cmd,
-                                      @NotNull VimSelection range) {
-        return VimPlugin.getChange()
-          .changeNumberVisualMode(editor, caret, range.toVimTextRange(false), cmd.getCount(), true);
-      }
-    };
-  }
-
+final public class ChangeVisualNumberAvalancheIncAction extends VisualOperatorActionHandler.ForEachCaret {
   @Contract(pure = true)
   @NotNull
   @Override
@@ -79,5 +60,15 @@ final public class ChangeVisualNumberAvalancheIncAction extends VimCommandAction
   @Override
   final public EnumSet<CommandFlags> getFlags() {
     return EnumSet.of(CommandFlags.FLAG_EXIT_VISUAL);
+  }
+
+  @Override
+  public boolean executeAction(@NotNull Editor editor,
+                               @NotNull Caret caret,
+                               @NotNull DataContext context,
+                               @NotNull Command cmd,
+                               @NotNull VimSelection range) {
+    return VimPlugin.getChange()
+      .changeNumberVisualMode(editor, caret, range.toVimTextRange(false), cmd.getCount(), true);
   }
 }

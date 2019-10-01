@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.scroll;
@@ -21,7 +21,6 @@ package com.maddyhome.idea.vim.action.motion.scroll;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.handler.VimActionHandler;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class MotionScrollLastScreenLineAction extends VimCommandAction {
+public class MotionScrollLastScreenLineAction extends VimActionHandler.SingleExecution {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -51,14 +50,8 @@ public class MotionScrollLastScreenLineAction extends VimCommandAction {
     return Command.Type.OTHER_READONLY;
   }
 
-  @NotNull
   @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        return VimPlugin.getMotion().scrollLineToLastScreenLine(editor, cmd.getRawCount(), false);
-      }
-    };
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    return VimPlugin.getMotion().scrollLineToLastScreenLine(editor, cmd.getRawCount(), false);
   }
 }

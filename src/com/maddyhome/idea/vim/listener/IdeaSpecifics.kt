@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.listener
@@ -84,6 +84,10 @@ object IdeaSpecifics {
       //region Enter insert mode after surround with if
       if (surrounderAction == action.javaClass.name && surrounderItems.any { action.templatePresentation.text.endsWith(it) }) {
         editor?.let {
+          val commandState = CommandState.getInstance(editor)
+          while (commandState.mode != CommandState.Mode.COMMAND) {
+            commandState.popState()
+          }
           VimPlugin.getChange().insertBeforeCursor(it, dataContext)
           KeyHandler.getInstance().reset(it)
         }

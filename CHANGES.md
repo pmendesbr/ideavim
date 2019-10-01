@@ -18,24 +18,49 @@ usual beta standards.
 
 To Be Released
 --------------
-_Available since 0.52.1 EAP:_
+_Available since 0.53.1 EAP:_
+
+**Features:**
+* Support surrounding with a function name ([link](https://github.com/tpope/vim-surround/blob/master/doc/surround.txt#L138))
+* [VIM-1720](https://youtrack.jetbrains.com/issue/VIM-1720) Add `:delmarks` command
+
+**Fixes:**
+* [VIM-1766](https://youtrack.jetbrains.com/issue/VIM-1766) Fix disappearing caret in ex entry on Linux
+* [VIM-1032](https://youtrack.jetbrains.com/issue/VIM-1032) Annotations work well with relative line numbers enabled
+* [VIM-1762](https://youtrack.jetbrains.com/issue/VIM-1762) Relative line numbers respect line number theme
+* [VIM-1717](https://youtrack.jetbrains.com/issue/VIM-1717) Fix incorrect scroll location if no match with `incsearch`
+* [VIM-1757](https://youtrack.jetbrains.com/issue/VIM-1757) Fix incorrect search results when specifying offset as part of search command
+* Fix search highlights not showing after deleting last result
+* Update current line highlight during incsearch and replace operation
+* [VIM-1773](https://youtrack.jetbrains.com/issue/VIM-1773) Provide fallback error stripe colour if not defined
+* [VIM-1785](https://youtrack.jetbrains.com/issue/VIM-1785)
+  [VIM-1731](https://youtrack.jetbrains.com/issue/VIM-1731)
+  Fix some problems with yanking to clipboard
+* [VIM-1781](https://youtrack.jetbrains.com/issue/VIM-1781) Fix yanking with dollar motion
+* [VIM-1772](https://youtrack.jetbrains.com/issue/VIM-1772) Fix yanking with `:y` command
+* [VIM-1685](https://youtrack.jetbrains.com/issue/VIM-1685) Fix `ESC` for insert mode
+* [VIM-1752](https://youtrack.jetbrains.com/issue/VIM-1752) Fix `ESC` for insert mode
+
+_To Be Released:_
+
+...
+
+0.53, 2019-08-07
+--------------
 * [VIM-1711](https://youtrack.jetbrains.com/issue/VIM-1711) Search is not triggered during surround action
 * [VIM-1712](https://youtrack.jetbrains.com/issue/VIM-1712) Fix `Y` command for visual mode
-* [VIM-1713](https://youtrack.jetbrains.com/issue/VIM-1713) Surround in visual mode put caret in corrent position
+* [VIM-1713](https://youtrack.jetbrains.com/issue/VIM-1713) Surround in visual mode put caret in correct position
 * [VIM-1732](https://youtrack.jetbrains.com/issue/VIM-1732) Fix SO after enabling vim mode
 * [VIM-1710](https://youtrack.jetbrains.com/issue/VIM-1710) Fix opening empty file with "relative number" enabled
 * [VIM-1725](https://youtrack.jetbrains.com/issue/VIM-1725) Fix problems with Japanese language
 * [VIM-1648](https://youtrack.jetbrains.com/issue/VIM-1648) Fix exception while substitute with conformation
-
-_Not released yet:_
-
-...
-
+* [VIM-1736](https://youtrack.jetbrains.com/issue/VIM-1736) Fix `` for ex panel
+* [VIM-1739](https://youtrack.jetbrains.com/issue/VIM-1739) Fix full-width characters for ex pane
 
 0.52, 2019-07-23
 --------------
 
-* Introduce [Select Mode](https://vimhelp.org/visual.txt.html#Select-mode).
+* Introduce [Select Mode](https://github.com/JetBrains/ideavim/wiki/Select-mode).
 
 
 * Fixed `:only` command

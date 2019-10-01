@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.maddyhome.idea.vim;
 
@@ -46,6 +46,7 @@ import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.io.HttpRequests;
 import com.maddyhome.idea.vim.ex.CommandParser;
 import com.maddyhome.idea.vim.ex.vimscript.VimScriptParser;
+import com.maddyhome.idea.vim.extension.VimExtensionRegistrar;
 import com.maddyhome.idea.vim.group.*;
 import com.maddyhome.idea.vim.group.copy.PutGroup;
 import com.maddyhome.idea.vim.group.copy.YankGroup;
@@ -54,6 +55,7 @@ import com.maddyhome.idea.vim.helper.DocumentManager;
 import com.maddyhome.idea.vim.helper.MacKeyRepeat;
 import com.maddyhome.idea.vim.listener.VimListenerManager;
 import com.maddyhome.idea.vim.option.OptionsManager;
+import com.maddyhome.idea.vim.ui.ExEntryPanel;
 import com.maddyhome.idea.vim.ui.VimEmulationConfigurable;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -66,6 +68,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This plugin attempts to emulate the key binding and general functionality of Vim and gVim. See the supplied
@@ -95,55 +98,14 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
 
   private static final Logger LOG = Logger.getInstance(VimPlugin.class);
 
-  @NotNull private final MotionGroup motion;
-  @NotNull private final ChangeGroup change;
-  @NotNull private final CommandGroup command;
-  @NotNull private final MarkGroup mark;
-  @NotNull private final RegisterGroup register;
-  @NotNull private final FileGroup file;
-  @NotNull private final SearchGroup search;
-  @NotNull private final ProcessGroup process;
-  @NotNull private final MacroGroup macro;
-  @NotNull private final DigraphGroup digraph;
-  @NotNull private final HistoryGroup history;
-  @NotNull private final KeyGroup key;
-  @NotNull private final WindowGroup window;
-  @NotNull private final EditorGroup editor;
-  @NotNull private final VisualMotionGroup visualMotion;
-  @NotNull private final YankGroup yank;
-  @NotNull private final PutGroup put;
-
-  @NotNull private final VimState state;
-
-  public VimPlugin() {
-    motion = new MotionGroup();
-    change = new ChangeGroup();
-    command = new CommandGroup();
-    mark = new MarkGroup();
-    register = new RegisterGroup();
-    file = new FileGroup();
-    search = new SearchGroup();
-    process = new ProcessGroup();
-    macro = new MacroGroup();
-    digraph = new DigraphGroup();
-    history = new HistoryGroup();
-    key = new KeyGroup();
-    window = new WindowGroup();
-    editor = new EditorGroup();
-    visualMotion = new VisualMotionGroup();
-    yank = new YankGroup();
-    put = new PutGroup();
-
-    state = new VimState();
-
-    LOG.debug("VimPlugin ctr");
-  }
-
   @NotNull
   @Override
   public String getComponentName() {
     return IDEAVIM_COMPONENT_NAME;
   }
+
+
+  @NotNull private final VimState state = new VimState();
 
   @Override
   public void initComponent() {
@@ -176,6 +138,12 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
   @NotNull
   public static VimState getVimState() {
     return getInstance().state;
+  }
+
+
+  @NotNull
+  public static MotionGroup getMotion() {
+    return ServiceManager.getService(MotionGroup.class);
   }
 
   /**
@@ -227,93 +195,83 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
   }
 
   @NotNull
-  public static MotionGroup getMotion() {
-    return getInstance().motion;
-  }
-
-  @NotNull
   public static ChangeGroup getChange() {
-    return getInstance().change;
+    return ServiceManager.getService(ChangeGroup.class);
   }
 
   @NotNull
   public static CommandGroup getCommand() {
-    return getInstance().command;
+    return ServiceManager.getService(CommandGroup.class);
   }
 
   @NotNull
   public static MarkGroup getMark() {
-    return getInstance().mark;
+    return ServiceManager.getService(MarkGroup.class);
   }
 
   @NotNull
   public static RegisterGroup getRegister() {
-    return getInstance().register;
+    return ServiceManager.getService(RegisterGroup.class);
   }
 
   @NotNull
   public static FileGroup getFile() {
-    return getInstance().file;
+    return ServiceManager.getService(FileGroup.class);
   }
 
   @NotNull
   public static SearchGroup getSearch() {
-    return getInstance().search;
+    return ServiceManager.getService(SearchGroup.class);
   }
 
   @NotNull
   public static ProcessGroup getProcess() {
-    return getInstance().process;
+    return ServiceManager.getService(ProcessGroup.class);
   }
 
   @NotNull
   public static MacroGroup getMacro() {
-    return getInstance().macro;
+    return ServiceManager.getService(MacroGroup.class);
   }
 
   @NotNull
   public static DigraphGroup getDigraph() {
-    return getInstance().digraph;
+    return ServiceManager.getService(DigraphGroup.class);
   }
 
   @NotNull
   public static HistoryGroup getHistory() {
-    return getInstance().history;
+    return ServiceManager.getService(HistoryGroup.class);
   }
 
   @NotNull
   public static KeyGroup getKey() {
-    return getInstance().key;
+    return ServiceManager.getService(KeyGroup.class);
   }
 
   @NotNull
   public static WindowGroup getWindow() {
-    return getInstance().window;
+    return ServiceManager.getService(WindowGroup.class);
   }
 
   @NotNull
   public static EditorGroup getEditor() {
-    return getInstance().editor;
+    return ServiceManager.getService(EditorGroup.class);
   }
 
   @NotNull
   public static VisualMotionGroup getVisualMotion() {
-    return getInstance().visualMotion;
+    return ServiceManager.getService(VisualMotionGroup.class);
   }
 
   @NotNull
   public static YankGroup getYank() {
-    return getInstance().yank;
+    return ServiceManager.getService(YankGroup.class);
   }
 
   @NotNull
   public static PutGroup getPut() {
-    return getInstance().put;
-  }
-
-  @NotNull
-  private static NotificationService getNotifications() {
-    return getNotifications(null);
+    return ServiceManager.getService(PutGroup.class);
   }
 
   @Override
@@ -327,38 +285,55 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
     state.setAttribute("enabled", Boolean.toString(enabled));
     element.addContent(state);
 
-    key.saveData(element);
-    editor.saveData(element);
-    this.state.saveData(element);
+    getKey().saveData(element);
+    getEditor().saveData(element);
 
     return element;
+  }
+
+  @NotNull
+  private static NotificationService getNotifications() {
+    return getNotifications(null);
   }
 
   private void initializePlugin() {
     if (initialized) return;
     initialized = true;
 
-    Notifications.Bus.register(NotificationService.IDEAVIM_STICKY_NOTIFICATION_ID, NotificationDisplayType.STICKY_BALLOON);
-
     ApplicationManager.getApplication().invokeLater(this::updateState);
 
+    getEditor().turnOn();
+    getSearch().turnOn();
     VimListenerManager.INSTANCE.turnOn();
-
-    // Register vim actions in command mode
-    RegisterActions.registerActions();
 
     // Add some listeners so we can handle special events
     DocumentManager.getInstance().addDocumentListener(MarkGroup.MarkUpdater.INSTANCE);
     DocumentManager.getInstance().addDocumentListener(SearchGroup.DocumentSearchListener.INSTANCE);
 
-    // Register ex handlers
-    CommandParser.getInstance().registerHandlers();
+    Runnable asyncSetup = () -> {
+      // Register vim actions in command mode
+      RegisterActions.registerActions();
 
-    if (!ApplicationManager.getApplication().isUnitTestMode()) {
-      final File ideaVimRc = VimScriptParser.findIdeaVimRc();
-      if (ideaVimRc != null) {
-        VimScriptParser.executeFile(ideaVimRc);
+      // Register ex handlers
+      CommandParser.getInstance().registerHandlers();
+
+      // Register extensions
+      VimExtensionRegistrar.registerExtensions();
+
+      if (!ApplicationManager.getApplication().isUnitTestMode()) {
+        final File ideaVimRc = VimScriptParser.findIdeaVimRc();
+        if (ideaVimRc != null) {
+          VimScriptParser.executeFile(ideaVimRc);
+        }
       }
+
+      Initialization.initialized();
+    };
+
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      asyncSetup.run();
+    } else {
+      ApplicationManager.getApplication().executeOnPooledThread(asyncSetup);
     }
   }
 
@@ -441,6 +416,18 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
     }
   }
 
+  public static class Initialization {
+    private static final AtomicBoolean initialized = new AtomicBoolean(false);
+
+    public static boolean notInitialized() {
+      return !(initialized.get());
+    }
+
+    public static void initialized() {
+      initialized.set(true);
+    }
+  }
+
   @NotNull
   private static VimPlugin getInstance() {
     return (VimPlugin)ApplicationManager.getApplication().getComponent(IDEAVIM_COMPONENT_NAME);
@@ -464,6 +451,7 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
     getEditor().turnOff();
     getSearch().turnOff();
     VimListenerManager.INSTANCE.turnOff();
+    ExEntryPanel.fullReset();
   }
 
   private void updateState() {
@@ -471,14 +459,14 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
       if (SystemInfo.isMac) {
         final MacKeyRepeat keyRepeat = MacKeyRepeat.getInstance();
         final Boolean enabled = keyRepeat.isEnabled();
-        final Boolean isKeyRepeat = editor.isKeyRepeat();
+        final Boolean isKeyRepeat = getEditor().isKeyRepeat();
         if ((enabled == null || !enabled) && (isKeyRepeat == null || isKeyRepeat)) {
           if (VimPlugin.getNotifications().enableRepeatingMode() == Messages.YES) {
-            editor.setKeyRepeat(true);
+            getEditor().setKeyRepeat(true);
             keyRepeat.setEnabled(true);
           }
           else {
-            editor.setKeyRepeat(false);
+            getEditor().setKeyRepeat(false);
           }
         }
       }
@@ -510,27 +498,35 @@ public class VimPlugin implements BaseComponent, PersistentStateComponent<Elemen
   public void loadState(@NotNull final Element element) {
     LOG.debug("Loading state");
 
-    // Restore whether the plugin is enabled or not
-    Element state = element.getChild("state");
-    if (state != null) {
-      try {
-        previousStateVersion = Integer.parseInt(state.getAttributeValue("version"));
+    Runnable setup = () -> {
+      // Restore whether the plugin is enabled or not
+      Element state = element.getChild("state");
+      if (state != null) {
+        try {
+          previousStateVersion = Integer.parseInt(state.getAttributeValue("version"));
+        }
+        catch (NumberFormatException ignored) {
+        }
+        enabled = Boolean.parseBoolean(state.getAttributeValue("enabled"));
+        previousKeyMap = state.getAttributeValue("keymap");
       }
-      catch (NumberFormatException ignored) {
-      }
-      enabled = Boolean.parseBoolean(state.getAttributeValue("enabled"));
-      previousKeyMap = state.getAttributeValue("keymap");
-    }
 
-    if (previousStateVersion > 0 && previousStateVersion < 5) {
-      // Migrate settings from 4 to 5 version
-      mark.readData(element);
-      register.readData(element);
-      search.readData(element);
-      history.readData(element);
+      if (previousStateVersion > 0 && previousStateVersion < 5) {
+        // Migrate settings from 4 to 5 version
+        getMark().readData(element);
+        getRegister().readData(element);
+        getSearch().readData(element);
+        getHistory().readData(element);
+      }
+      getKey().readData(element);
+      getEditor().readData(element);
+      this.state.readData(element);
+    };
+
+    if (ApplicationManager.getApplication().isUnitTestMode()) {
+      setup.run();
+    } else {
+      ApplicationManager.getApplication().executeOnPooledThread(setup);
     }
-    key.readData(element);
-    editor.readData(element);
-    this.state.readData(element);
   }
 }

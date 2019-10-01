@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.scroll
@@ -21,7 +21,6 @@ package com.maddyhome.idea.vim.action.motion.scroll
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.VimCommandAction
 import com.maddyhome.idea.vim.command.Command
 import com.maddyhome.idea.vim.command.CommandFlags
 import com.maddyhome.idea.vim.command.MappingMode
@@ -32,17 +31,19 @@ import java.util.*
 import javax.swing.KeyStroke
 
 
-class MotionScrollPageDownAction : VimCommandAction() {
+class MotionScrollPageDownAction : VimActionHandler.SingleExecution() {
   override val mappingModes: Set<MappingMode> = MappingMode.NVO
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("<C-F>", "<PageDown>")
 
   override val type: Command.Type = Command.Type.OTHER_READONLY
 
-  override fun makeActionHandler(): VimActionHandler = MotionScrollPageDownActionHandler
+  override fun execute(editor: Editor, context: DataContext, cmd: Command): Boolean {
+    return VimPlugin.getMotion().scrollFullPage(editor, cmd.count)
+  }
 }
 
-class MotionScrollPageDownInsertModeAction : VimCommandAction() {
+class MotionScrollPageDownInsertModeAction : VimActionHandler.SingleExecution() {
 
   override val mappingModes: Set<MappingMode> = MappingMode.I
   override val keyStrokesSet: Set<List<KeyStroke>> = setOf(
@@ -57,10 +58,6 @@ class MotionScrollPageDownInsertModeAction : VimCommandAction() {
 
   override val flags: EnumSet<CommandFlags> = enumSetOf(CommandFlags.FLAG_CLEAR_STROKES)
 
-  override fun makeActionHandler(): VimActionHandler = MotionScrollPageDownActionHandler
-}
-
-private object MotionScrollPageDownActionHandler : VimActionHandler.SingleExecution() {
   override fun execute(editor: Editor, context: DataContext, cmd: Command): Boolean {
     return VimPlugin.getMotion().scrollFullPage(editor, cmd.count)
   }

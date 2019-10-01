@@ -13,12 +13,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.option
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
 import com.maddyhome.idea.vim.ex.ExOutputModel
@@ -48,7 +49,7 @@ object OptionsManager {
   val incsearch = addOption(ToggleOption("incsearch", "is", false))
   val iskeyword = addOption(KeywordOption("iskeyword", "isk", arrayOf("@", "48-57", "_")))
   val keymodel = addOption(KeyModelOptionData.option)
-  val lookupActions = addOption(ListOption("lookupactions", "lookupactions", arrayOf("VimLookupUp", "VimLookupDown"), null))
+  val lookupActions = addOption(ListOption("lookupactions", "lookupactions", arrayOf("VimLookupUpAction", "VimLookupDownAction"), null))
   val matchpairs = addOption(ListOption("matchpairs", "mps", arrayOf("(:)", "{:}", "[:]"), ".:."))
   val more = addOption(ToggleOption("more", "more", true))
   val nrformats = addOption(BoundListOption("nrformats", "nf", arrayOf("octal", "hex"), arrayOf("octal", "hex", "alpha")))
@@ -72,10 +73,6 @@ object OptionsManager {
   val wrapscan = addOption(ToggleOption("wrapscan", "ws", true))
   val visualEnterDelay = addOption(NumberOption("visualdelay", "visualdelay", 100, 0, Int.MAX_VALUE))
 
-  init {
-    registerExtensionOptions()
-  }
-
   fun isSet(name: String): Boolean {
     val option = getOption(name)
     return option is ToggleOption && option.getValue()
@@ -89,26 +86,6 @@ object OptionsManager {
    * Gets an option by the supplied name or short name.
    */
   fun getOption(name: String): Option? = options[name] ?: abbrevs[name]
-
-  private fun registerExtensionOptions() {
-    for (extension in VimExtension.EP_NAME.extensionList) {
-      val name = extension.name
-      val option = ToggleOption(name, name, false)
-      option.addOptionChangeListener {
-        for (extensionInListener in VimExtension.EP_NAME.extensionList) {
-          if (name == extensionInListener.name) {
-            if (isSet(name)) {
-              extensionInListener.init()
-              logger.info("IdeaVim extension '$name' initialized")
-            } else {
-              extensionInListener.dispose()
-            }
-          }
-        }
-      }
-      addOption(option)
-    }
-  }
 
   /**
    * This parses a set of :set commands. The following types of commands are supported:
@@ -324,12 +301,7 @@ object OptionsManager {
     var empty = cols.size % colCount
     empty = if (empty == 0) colCount else empty
 
-    if (logger.isDebugEnabled) {
-      logger.debug("showOptions")
-      logger.debug("width=$width")
-      logger.debug("colCount=$colCount")
-      logger.debug("height=$height")
-    }
+    logger.debug { "showOptions, width=$width, colCount=$colCount, height=$height" }
 
     val res = StringBuilder()
     if (showIntro) {

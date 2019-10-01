@@ -13,13 +13,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.ex.handler
 
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
 import com.maddyhome.idea.vim.ex.*
@@ -48,9 +49,7 @@ class HistoryHandler : CommandHandler.SingleExecution() {
       arg = ""
     }
 
-    if (logger.isDebugEnabled) {
-      logger.debug("key='$key'")
-    }
+    logger.debug { "key='$key'" }
 
     if (key.length == 1 && key[0] in ":/=@") {
       when (key[0]) {
@@ -66,9 +65,7 @@ class HistoryHandler : CommandHandler.SingleExecution() {
         !"input".startsWith(key) &&
         !"all".startsWith(key)) {
         // Invalid command
-        if (logger.isDebugEnabled) {
-          logger.debug("invalid command $key")
-        }
+        logger.debug { "invalid command $key" }
         return false
       }
     } else {
@@ -116,9 +113,7 @@ class HistoryHandler : CommandHandler.SingleExecution() {
   }
 
   private fun processKey(start: Int, end: Int) = { key: String ->
-    if (logger.isDebugEnabled) {
-      logger.debug("process $key $start,$end")
-    }
+    logger.debug { "process $key $start,$end" }
 
     VimPlugin.getHistory().getEntries(key, start, end).joinToString("\n", prefix = "      #  $key history\n") { entry ->
       val num = entry.number.toString().padStart(7)

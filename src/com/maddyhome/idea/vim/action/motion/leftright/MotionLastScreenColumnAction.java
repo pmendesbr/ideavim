@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.leftright;
@@ -22,7 +22,6 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.MotionEditorAction;
 import com.maddyhome.idea.vim.command.*;
 import com.maddyhome.idea.vim.group.MotionGroup;
 import com.maddyhome.idea.vim.handler.MotionActionHandler;
@@ -33,11 +32,10 @@ import com.maddyhome.idea.vim.option.OptionsManager;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-public class MotionLastScreenColumnAction extends MotionEditorAction {
+public class MotionLastScreenColumnAction extends MotionActionHandler.ForEachCaret {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -50,44 +48,38 @@ public class MotionLastScreenColumnAction extends MotionEditorAction {
     return parseKeysSet("g$", "g<End>");
   }
 
-  @NotNull
   @Override
-  public EnumSet<CommandFlags> getFlags() {
-    return EnumSet.of(CommandFlags.FLAG_MOT_INCLUSIVE);
+  public int getOffset(@NotNull Editor editor,
+                       @NotNull Caret caret,
+                       @NotNull DataContext context,
+                       int count,
+                       int rawCount,
+                       Argument argument) {
+    boolean allow = false;
+    if (CommandStateHelper.inInsertMode(editor)) {
+      allow = true;
+    }
+    else if (CommandState.getInstance(editor).getMode() == CommandState.Mode.VISUAL) {
+      BoundStringOption opt = OptionsManager.INSTANCE.getSelection();
+      if (!opt.getValue().equals("old")) {
+        allow = true;
+      }
+    }
+
+    return VimPlugin.getMotion().moveCaretToLineScreenEnd(editor, caret, allow);
+  }
+
+  @Override
+  public void postMove(@NotNull Editor editor,
+                       @NotNull Caret caret,
+                       @NotNull DataContext context,
+                       @NotNull Command cmd) {
+    UserDataManager.setVimLastColumn(caret, MotionGroup.LAST_COLUMN);
   }
 
   @NotNull
   @Override
-  public MotionActionHandler makeActionHandler() {
-    return new MotionActionHandler.ForEachCaret() {
-      @Override
-      public int getOffset(@NotNull Editor editor,
-                           @NotNull Caret caret,
-                           @NotNull DataContext context,
-                           int count,
-                           int rawCount,
-                           Argument argument) {
-        boolean allow = false;
-        if (CommandStateHelper.inInsertMode(editor)) {
-          allow = true;
-        }
-        else if (CommandState.getInstance(editor).getMode() == CommandState.Mode.VISUAL) {
-          BoundStringOption opt = OptionsManager.INSTANCE.getSelection();
-          if (!opt.getValue().equals("old")) {
-            allow = true;
-          }
-        }
-
-        return VimPlugin.getMotion().moveCaretToLineScreenEnd(editor, caret, allow);
-      }
-
-      @Override
-      public void postMove(@NotNull Editor editor,
-                           @NotNull Caret caret,
-                           @NotNull DataContext context,
-                           @NotNull Command cmd) {
-        UserDataManager.setVimLastColumn(caret, MotionGroup.LAST_COLUMN);
-      }
-    };
+  public MotionType getMotionType() {
+    return MotionType.INCLUSIVE;
   }
 }

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.visual;
@@ -21,7 +21,6 @@ package com.maddyhome.idea.vim.action.motion.visual;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.CommandFlags;
 import com.maddyhome.idea.vim.command.CommandState;
@@ -37,23 +36,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class VisualToggleBlockModeAction extends VimCommandAction {
-  @NotNull
-  @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        final ListOption listOption = OptionsManager.INSTANCE.getSelectmode();
-        if (listOption.contains("cmd")) {
-          return VimPlugin.getVisualMotion().enterSelectMode(editor, CommandState.SubMode.VISUAL_BLOCK);
-        }
-
-        return VimPlugin.getVisualMotion()
-          .toggleVisual(editor, cmd.getCount(), cmd.getRawCount(), CommandState.SubMode.VISUAL_BLOCK);
-      }
-    };
-  }
+public class VisualToggleBlockModeAction extends VimActionHandler.SingleExecution {
 
   @NotNull
   @Override
@@ -77,5 +60,16 @@ public class VisualToggleBlockModeAction extends VimCommandAction {
   @Override
   public EnumSet<CommandFlags> getFlags() {
     return EnumSet.of(CommandFlags.FLAG_MOT_BLOCKWISE);
+  }
+
+  @Override
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    final ListOption listOption = OptionsManager.INSTANCE.getSelectmode();
+    if (listOption.contains("cmd")) {
+      return VimPlugin.getVisualMotion().enterSelectMode(editor, CommandState.SubMode.VISUAL_BLOCK);
+    }
+
+    return VimPlugin.getVisualMotion()
+      .toggleVisual(editor, cmd.getCount(), cmd.getRawCount(), CommandState.SubMode.VISUAL_BLOCK);
   }
 }

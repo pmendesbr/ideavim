@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 package com.maddyhome.idea.vim.group;
 
@@ -33,17 +33,15 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.VirtualFileSystem;
 import com.maddyhome.idea.vim.KeyHandler;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.MotionEditorAction;
-import com.maddyhome.idea.vim.action.TextObjectAction;
-import com.maddyhome.idea.vim.command.Argument;
-import com.maddyhome.idea.vim.command.Command;
-import com.maddyhome.idea.vim.command.CommandFlags;
-import com.maddyhome.idea.vim.command.CommandState;
+import com.maddyhome.idea.vim.command.*;
 import com.maddyhome.idea.vim.common.Jump;
 import com.maddyhome.idea.vim.common.Mark;
 import com.maddyhome.idea.vim.common.TextRange;
 import com.maddyhome.idea.vim.ex.ExOutputModel;
 import com.maddyhome.idea.vim.group.visual.VisualGroupKt;
+import com.maddyhome.idea.vim.handler.EditorActionHandlerBase;
+import com.maddyhome.idea.vim.handler.MotionActionHandler;
+import com.maddyhome.idea.vim.handler.TextObjectActionHandler;
 import com.maddyhome.idea.vim.helper.CommandStateHelper;
 import com.maddyhome.idea.vim.helper.EditorHelper;
 import com.maddyhome.idea.vim.helper.SearchHelper;
@@ -52,6 +50,7 @@ import com.maddyhome.idea.vim.listener.VimListenerManager;
 import com.maddyhome.idea.vim.option.NumberOption;
 import com.maddyhome.idea.vim.option.OptionsManager;
 import com.maddyhome.idea.vim.ui.ExEntryPanel;
+import kotlin.Pair;
 import kotlin.ranges.IntProgression;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,6 +58,8 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.io.File;
 import java.util.EnumSet;
+
+import static com.maddyhome.idea.vim.group.ChangeGroup.*;
 
 /**
  * This handles all motion related commands and marks
@@ -102,7 +103,6 @@ public class MotionGroup {
    * @param count      The count applied to the motion
    * @param rawCount   The actual count entered by the user
    * @param argument   Any argument needed by the motion
-   * @param incNewline True if to include newline
    * @return The motion's range
    */
   @Nullable
@@ -111,68 +111,82 @@ public class MotionGroup {
                                          DataContext context,
                                          int count,
                                          int rawCount,
-                                         @NotNull Argument argument,
-                                         boolean incNewline) {
-    final Command cmd = argument.getMotion();
-    if (cmd == null) {
-      return null;
+                                         @NotNull Argument argument) {
+    int start;
+    int end;
+    if (argument.getType() == Argument.Type.OFFSETS ) {
+      final Pair<Integer, Integer> offsets = argument.getOffsets().get(caret);
+      if (offsets == null) return null;
+
+      start = offsets.getFirst();
+      end = offsets.getSecond();
     }
-    // Normalize the counts between the command and the motion argument
-    int cnt = cmd.getCount() * count;
-    int raw = rawCount == 0 && cmd.getRawCount() == 0 ? 0 : cnt;
-    int start = 0;
-    int end = 0;
-    if (cmd.getAction() instanceof MotionEditorAction) {
-      MotionEditorAction action = (MotionEditorAction)cmd.getAction();
+    else {
+      final Command cmd = argument.getMotion();
+      // Normalize the counts between the command and the motion argument
+      int cnt = cmd.getCount() * count;
+      int raw = rawCount == 0 && cmd.getRawCount() == 0 ? 0 : cnt;
+      if (cmd.getAction() instanceof MotionActionHandler) {
+        MotionActionHandler action = (MotionActionHandler)cmd.getAction();
 
-      // This is where we are now
-      start = caret.getOffset();
+        // This is where we are now
+        start = caret.getOffset();
 
-      // Execute the motion (without moving the cursor) and get where we end
-      end = action.getOffset(editor, caret, context, cnt, raw, cmd.getArgument());
+        // Execute the motion (without moving the cursor) and get where we end
+        end = action.getHandlerOffset(editor, caret, context, cnt, raw, cmd.getArgument());
 
-      // Invalid motion
-      if (end == -1) {
-        return null;
+        // Invalid motion
+        if (end == -1) return null;
+
+        // If inclusive, add the last character to the range
+        if (action.getMotionType() == MotionType.INCLUSIVE &&
+            !cmd.getFlags().contains(CommandFlags.FLAG_MOT_LINEWISE)) {
+          end++;
+        }
       }
-    }
-    else if (cmd.getAction() instanceof TextObjectAction) {
-      TextObjectAction action = (TextObjectAction)cmd.getAction();
+      else if (cmd.getAction() instanceof TextObjectActionHandler) {
+        TextObjectActionHandler action = (TextObjectActionHandler)cmd.getAction();
 
-      TextRange range = action.getRange(editor, caret, context, cnt, raw, cmd.getArgument());
+        TextRange range = action.getRange(editor, caret, context, cnt, raw, cmd.getArgument());
 
-      if (range == null) {
-        return null;
+        if (range == null) return null;
+
+        start = range.getStartOffset();
+        end = range.getEndOffset();
+
+        if (cmd.getFlags().contains(CommandFlags.FLAG_MOT_LINEWISE)) end--;
+      } else {
+        throw new RuntimeException("Commands doesn't take " + cmd.getAction().getClass().getSimpleName() + " as an operator");
       }
 
-      start = range.getStartOffset();
-      end = range.getEndOffset();
-    }
-
-    // If we are a linewise motion we need to normalize the start and stop then move the start to the beginning
-    // of the line and move the end to the end of the line.
-    EnumSet<CommandFlags> flags = cmd.getFlags();
-    if (flags.contains(CommandFlags.FLAG_MOT_LINEWISE)) {
+      // Normalize the range
       if (start > end) {
         int t = start;
         start = end;
         end = t;
       }
 
-      start = EditorHelper.getLineStartForOffset(editor, start);
-      end = Math
-        .min(EditorHelper.getLineEndForOffset(editor, end) + (incNewline ? 1 : 0), EditorHelper.getFileSize(editor));
-    }
-    // If characterwise and inclusive, add the last character to the range
-    else if (flags.contains(CommandFlags.FLAG_MOT_INCLUSIVE)) {
-      end++;
+      // If we are a linewise motion we need to normalize the start and stop then move the start to the beginning
+      // of the line and move the end to the end of the line.
+      EnumSet<CommandFlags> flags = cmd.getFlags();
+      if (flags.contains(CommandFlags.FLAG_MOT_LINEWISE)) {
+        start = EditorHelper.getLineStartForOffset(editor, start);
+        end = Math.min(EditorHelper.getLineEndForOffset(editor, end) + 1, EditorHelper.getFileSize(editor, true));
+      }
     }
 
-    // Normalize the range
-    if (start > end) {
-      int t = start;
-      start = end;
-      end = t;
+    // This is a kludge for dw, dW, and d[w. Without this kludge, an extra newline is operated when it shouldn't be.
+    String text = editor.getDocument().getCharsSequence().subSequence(start, end).toString();
+    final int lastNewLine = text.lastIndexOf('\n');
+    if (lastNewLine > 0) {
+      String id = argument.getMotion().getAction().getId();
+      if (id.equals(VIM_MOTION_WORD_RIGHT) ||
+          id.equals(VIM_MOTION_BIG_WORD_RIGHT) ||
+          id.equals(VIM_MOTION_CAMEL_RIGHT)) {
+        if (!SearchHelper.anyNonWhitespace(editor, end, -1)) {
+          end = start + lastNewLine;
+        }
+      }
     }
 
     return new TextRange(start, end);
@@ -824,7 +838,7 @@ public class MotionGroup {
     return -2;
   }
 
-  public int moveCaretToJump(@NotNull Editor editor, @NotNull Caret caret, int count) {
+  public int moveCaretToJump(@NotNull Editor editor, int count) {
     final int spot = VimPlugin.getMark().getJumpSpot();
     final Jump jump = VimPlugin.getMark().getJump(count);
 
@@ -851,7 +865,7 @@ public class MotionGroup {
         if (spot == -1) {
           VimPlugin.getMark().addJump(editor, false);
         }
-        moveCaret(newEditor, caret,
+        moveCaret(newEditor, newEditor.getCaretModel().getCurrentCaret(),
                   EditorHelper.normalizeOffset(newEditor, newEditor.logicalPositionToOffset(lp), false));
       }
 
@@ -1301,9 +1315,7 @@ public class MotionGroup {
   }
 
   public static void fileEditorManagerSelectionChangedCallback(@NotNull FileEditorManagerEvent event) {
-    if (ExEntryPanel.getInstance().isActive()) {
-      ExEntryPanel.getInstance().deactivate(false);
-    }
+    ExEntryPanel.deactivateAll();
     final FileEditor fileEditor = event.getOldEditor();
     if (fileEditor instanceof TextEditor) {
       final Editor editor = ((TextEditor)fileEditor).getEditor();

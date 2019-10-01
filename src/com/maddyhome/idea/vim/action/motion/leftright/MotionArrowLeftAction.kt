@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.leftright
@@ -22,27 +22,23 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.MotionEditorAction
 import com.maddyhome.idea.vim.command.Argument
-import com.maddyhome.idea.vim.command.CommandFlags
 import com.maddyhome.idea.vim.command.MappingMode
+import com.maddyhome.idea.vim.command.MotionType
 import com.maddyhome.idea.vim.handler.NonShiftedSpecialKeyHandler
 import com.maddyhome.idea.vim.helper.StringHelper.parseKeys
 import java.awt.event.KeyEvent
-import java.util.*
 import javax.swing.KeyStroke
 
-class MotionArrowLeftAction : MotionEditorAction() {
-  override fun makeActionHandler() = object : NonShiftedSpecialKeyHandler() {
-    override fun offset(editor: Editor, caret: Caret, context: DataContext, count: Int, rawCount: Int, argument: Argument?): Int {
-      return VimPlugin.getMotion().moveCaretHorizontal(editor, caret, -count, false)
-    }
-  }
+class MotionArrowLeftAction : NonShiftedSpecialKeyHandler() {
+  override val motionType: MotionType = MotionType.EXCLUSIVE
 
   override val mappingModes: MutableSet<MappingMode> = MappingMode.NVO
 
   override val keyStrokesSet: Set<List<KeyStroke>> = setOf(parseKeys("<Left>"), listOf(KeyStroke.getKeyStroke(KeyEvent.VK_KP_LEFT, 0)))
 
-  override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_MOT_EXCLUSIVE)
+  override fun offset(editor: Editor, caret: Caret, context: DataContext, count: Int, rawCount: Int, argument: Argument?): Int {
+    return VimPlugin.getMotion().moveCaretHorizontal(editor, caret, -count, false)
+  }
 }
 

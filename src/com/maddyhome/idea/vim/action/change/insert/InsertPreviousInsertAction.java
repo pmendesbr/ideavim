@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.insert;
@@ -21,12 +21,10 @@ package com.maddyhome.idea.vim.action.change.insert;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Argument;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.MappingMode;
 import com.maddyhome.idea.vim.handler.ChangeEditorActionHandler;
-import com.maddyhome.idea.vim.handler.VimActionHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class InsertPreviousInsertAction extends VimCommandAction {
+public class InsertPreviousInsertAction extends ChangeEditorActionHandler.SingleExecution {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -54,19 +52,13 @@ public class InsertPreviousInsertAction extends VimCommandAction {
     return Command.Type.INSERT;
   }
 
-  @NotNull
   @Override
-  protected VimActionHandler makeActionHandler() {
-    return new ChangeEditorActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor,
-                             @NotNull DataContext context,
-                             int count,
-                             int rawCount,
-                             @Nullable Argument argument) {
-        VimPlugin.getChange().insertPreviousInsert(editor, context, false);
-        return true;
-      }
-    };
+  public boolean execute(@NotNull Editor editor,
+                         @NotNull DataContext context,
+                         int count,
+                         int rawCount,
+                         @Nullable Argument argument) {
+    VimPlugin.getChange().insertPreviousInsert(editor, context, false);
+    return true;
   }
 }

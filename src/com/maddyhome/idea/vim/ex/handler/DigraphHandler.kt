@@ -13,13 +13,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.ex.handler
 
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.diagnostic.debug
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
 import com.maddyhome.idea.vim.ex.CommandHandler
@@ -33,9 +34,7 @@ class DigraphHandler : CommandHandler.SingleExecution() {
 
   override fun execute(editor: Editor, context: DataContext, cmd: ExCommand): Boolean {
     val arg = cmd.argument
-    if (logger.isDebugEnabled) {
-      logger.debug("arg=$arg")
-    }
+    logger.debug { "arg=$arg" }
 
     return VimPlugin.getDigraph().parseCommandLine(editor, arg)
   }

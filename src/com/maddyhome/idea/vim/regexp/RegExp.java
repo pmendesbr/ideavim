@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.regexp;
@@ -4682,6 +4682,11 @@ public class RegExp {
 
     public int lnum = 0;
     public int col = 0;
+
+    @Override
+    public String toString() {
+      return "lpos: (" + lnum + ", " + col + ")";
+    }
   }
 
   /*

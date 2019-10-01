@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.extension.multiplecursors
@@ -37,6 +37,7 @@ import com.maddyhome.idea.vim.group.visual.vimSetSelection
 import com.maddyhome.idea.vim.helper.EditorHelper
 import com.maddyhome.idea.vim.helper.SearchHelper.findWordUnderCursor
 import com.maddyhome.idea.vim.helper.StringHelper.parseKeys
+import com.maddyhome.idea.vim.helper.endOffsetInclusive
 import com.maddyhome.idea.vim.helper.inVisualMode
 import com.maddyhome.idea.vim.option.OptionsManager
 import java.lang.Integer.min
@@ -221,7 +222,7 @@ class VimMultipleCursorsExtension : VimNonDisposableExtension() {
   private fun findNextOccurrence(editor: Editor, caret: Caret, range: TextRange, whole: Boolean): Int {
     VimPlugin.getVisualMotion().setVisualMode(editor)
     val wordRange = VimPlugin.getMotion().getWordRange(editor, caret, 1, false, false)
-    caret.vimSetSelection(wordRange.startOffset, wordRange.endOffset, true)
+    caret.vimSetSelection(wordRange.startOffset, wordRange.endOffsetInclusive, true)
 
     val offset = VimPlugin.getSearch().searchWord(editor, caret, 1, whole, 1)
     MotionGroup.moveCaret(editor, caret, range.endOffset - 1)

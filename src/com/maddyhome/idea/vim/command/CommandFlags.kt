@@ -13,28 +13,29 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.command
 
+enum class MotionType {
+  INCLUSIVE,
+  EXCLUSIVE
+}
+
 enum class CommandFlags {
   /**
    * Motion flags
+   *
+   * TODO it should be only INCLUSIVE, EXCLUSIVE and LINEWISE motions. Should be moved to [MotionType]
    */
   FLAG_MOT_LINEWISE,
   FLAG_MOT_CHARACTERWISE,
   FLAG_MOT_BLOCKWISE,
-  FLAG_MOT_INCLUSIVE,
-  FLAG_MOT_EXCLUSIVE,
   /**
    * Indicates that the cursor position should be saved prior to this motion command
    */
   FLAG_SAVE_JUMP,
-  /**
-   * Special flag that says this is characterwise only for visual mode
-   */
-  FLAG_VISUAL_CHARACTERWISE,
   /**
    * Special command flag that indicates it is not to be repeated
    */
@@ -49,10 +50,8 @@ enum class CommandFlags {
   FLAG_SAVE_STROKE,
   FLAG_IGNORE_SCROLL_JUMP,
   FLAG_IGNORE_SIDE_SCROLL_JUMP,
-  /**
-   * Indicates a command can accept a count in mid command
-   */
-  FLAG_ALLOW_MID_COUNT,
+
+  //TODO REMOVE!
   /**
    * Search Flags
    */
@@ -63,10 +62,6 @@ enum class CommandFlags {
    */
   FLAG_EXIT_VISUAL,
   /**
-   * Special flag used for any mappings involving operators
-   */
-  FLAG_OP_PEND,
-  /**
    * This command starts a multi-command undo transaction
    */
   FLAG_MULTIKEY_UNDO,
@@ -74,10 +69,7 @@ enum class CommandFlags {
    * This command should be followed by another command
    */
   FLAG_EXPECT_MORE,
-  /**
-   * This flag indicates the command's argument isn't used while recording
-   */
-  FLAG_NO_ARG_RECORDING,
+
   /**
    * Indicate that the character argument may come from a digraph
    */
@@ -96,5 +88,18 @@ enum class CommandFlags {
    *   and [com.maddyhome.idea.vim.action.window.LookupDownAction] because there actions have custom handler
    *   only if lookup is active.
    */
-  FLAG_TYPEAHEAD_SELF_MANAGE
+  FLAG_TYPEAHEAD_SELF_MANAGE,
+
+  /**
+   * There are some double-character commands like `cc`, `dd`, `yy`.
+   * During the execution these commands are replaced with `c_`, `d_`, `y_`, etc.
+   *
+   * This is not any kind of workaround, this is exactly how the original vim works.
+   *   The `dd` command (and others) should not be processed as a monolith command, or it will lead to problems
+   *   like this: https://youtrack.jetbrains.com/issue/VIM-1189
+   *
+   * If some command has this flag, and the user enters motion operator that is the same as the command itself, the
+   *   motion operator will be replaced with `_`.
+   */
+  FLAG_DUPLICABLE_OPERATOR
 }

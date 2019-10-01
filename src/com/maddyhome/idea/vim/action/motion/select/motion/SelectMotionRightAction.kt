@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.select.motion
@@ -23,9 +23,9 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.MotionEditorAction
 import com.maddyhome.idea.vim.command.Argument
 import com.maddyhome.idea.vim.command.MappingMode
+import com.maddyhome.idea.vim.command.MotionType
 import com.maddyhome.idea.vim.handler.MotionActionHandler
 import com.maddyhome.idea.vim.helper.isTemplateActive
 import com.maddyhome.idea.vim.option.KeyModelOptionData
@@ -36,31 +36,31 @@ import javax.swing.KeyStroke
  * @author Alex Plate
  */
 
-class SelectMotionRightAction : MotionEditorAction() {
-  override fun makeActionHandler() = object : MotionActionHandler.ForEachCaret() {
-    override fun getOffset(editor: Editor, caret: Caret, context: DataContext, count: Int, rawCount: Int, argument: Argument?): Int {
-      val keymodel = OptionsManager.keymodel
-      if (KeyModelOptionData.stopsel in keymodel || KeyModelOptionData.stopselect in keymodel) {
-        logger.info("Keymodel option has stopselect. Exiting select mode")
-        val startSelection = caret.selectionStart
-        val endSelection = caret.selectionEnd
-        VimPlugin.getVisualMotion().exitSelectMode(editor, false)
-        if (editor.isTemplateActive()) {
-          logger.info("Template is active. Activate insert mode")
-          VimPlugin.getChange().insertBeforeCursor(editor, context)
-          if (caret.offset in startSelection..endSelection) {
-            return endSelection
-          }
-        }
-        return caret.offset
-      }
-      return VimPlugin.getMotion().moveCaretHorizontal(editor, caret, count, false)
-    }
-  }
+class SelectMotionRightAction : MotionActionHandler.ForEachCaret() {
+  override val motionType: MotionType = MotionType.EXCLUSIVE
 
   override val mappingModes: MutableSet<MappingMode> = MappingMode.S
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("<Right>")
+
+  override fun getOffset(editor: Editor, caret: Caret, context: DataContext, count: Int, rawCount: Int, argument: Argument?): Int {
+    val keymodel = OptionsManager.keymodel
+    if (KeyModelOptionData.stopsel in keymodel || KeyModelOptionData.stopselect in keymodel) {
+      logger.info("Keymodel option has stopselect. Exiting select mode")
+      val startSelection = caret.selectionStart
+      val endSelection = caret.selectionEnd
+      VimPlugin.getVisualMotion().exitSelectMode(editor, false)
+      if (editor.isTemplateActive()) {
+        logger.info("Template is active. Activate insert mode")
+        VimPlugin.getChange().insertBeforeCursor(editor, context)
+        if (caret.offset in startSelection..endSelection) {
+          return endSelection
+        }
+      }
+      return caret.offset
+    }
+    return VimPlugin.getMotion().moveCaretHorizontal(editor, caret, count, false)
+  }
 
   companion object {
     private val logger = Logger.getInstance(SelectMotionRightAction::class.java)

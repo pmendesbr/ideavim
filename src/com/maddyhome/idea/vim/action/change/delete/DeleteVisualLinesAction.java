@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.delete;
@@ -22,11 +22,9 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.*;
 import com.maddyhome.idea.vim.common.TextRange;
 import com.maddyhome.idea.vim.group.visual.VimSelection;
-import com.maddyhome.idea.vim.handler.VimActionHandler;
 import com.maddyhome.idea.vim.handler.VisualOperatorActionHandler;
 import com.maddyhome.idea.vim.helper.EditorHelper;
 import org.jetbrains.annotations.Contract;
@@ -40,33 +38,7 @@ import java.util.Set;
 /**
  * @author vlan
  */
-final public class DeleteVisualLinesAction extends VimCommandAction {
-  @Contract(" -> new")
-  @NotNull
-  @Override
-  final protected VimActionHandler makeActionHandler() {
-    return new VisualOperatorActionHandler.ForEachCaret() {
-      @Override
-      public boolean executeAction(@NotNull Editor editor,
-                                      @NotNull Caret caret,
-                                      @NotNull DataContext context,
-                                      @NotNull Command cmd,
-                                      @NotNull VimSelection range) {
-        final CommandState.SubMode mode = CommandState.getInstance(editor).getSubMode();
-        final TextRange textRange = range.toVimTextRange(false);
-        if (mode == CommandState.SubMode.VISUAL_BLOCK) {
-          return VimPlugin.getChange()
-            .deleteRange(editor, editor.getCaretModel().getPrimaryCaret(), textRange,
-                         SelectionType.fromSubMode(mode), false);
-        } else {
-          final TextRange lineRange = new TextRange(EditorHelper.getLineStartForOffset(editor, textRange.getStartOffset()),
-                                                    EditorHelper.getLineEndForOffset(editor, textRange.getEndOffset()) + 1);
-          return VimPlugin.getChange().deleteRange(editor, caret, lineRange, SelectionType.LINE_WISE, false);
-        }
-      }
-    };
-  }
-
+final public class DeleteVisualLinesAction extends VisualOperatorActionHandler.ForEachCaret {
   @Contract(pure = true)
   @NotNull
   @Override
@@ -91,5 +63,25 @@ final public class DeleteVisualLinesAction extends VimCommandAction {
   @Override
   final public EnumSet<CommandFlags> getFlags() {
     return EnumSet.of(CommandFlags.FLAG_MOT_LINEWISE, CommandFlags.FLAG_EXIT_VISUAL);
+  }
+
+  @Override
+  public boolean executeAction(@NotNull Editor editor,
+                               @NotNull Caret caret,
+                               @NotNull DataContext context,
+                               @NotNull Command cmd,
+                               @NotNull VimSelection range) {
+    final CommandState.SubMode mode = CommandState.getInstance(editor).getSubMode();
+    final TextRange textRange = range.toVimTextRange(false);
+    if (mode == CommandState.SubMode.VISUAL_BLOCK) {
+      return VimPlugin.getChange()
+        .deleteRange(editor, editor.getCaretModel().getPrimaryCaret(), textRange, SelectionType.fromSubMode(mode),
+                     false);
+    }
+    else {
+      final TextRange lineRange = new TextRange(EditorHelper.getLineStartForOffset(editor, textRange.getStartOffset()),
+                                                EditorHelper.getLineEndForOffset(editor, textRange.getEndOffset()) + 1);
+      return VimPlugin.getChange().deleteRange(editor, caret, lineRange, SelectionType.LINE_WISE, false);
+    }
   }
 }

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.leftright
@@ -22,12 +22,12 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.MotionEditorAction
 import com.maddyhome.idea.vim.command.Argument
 import com.maddyhome.idea.vim.command.Command
 import com.maddyhome.idea.vim.command.CommandFlags
 import com.maddyhome.idea.vim.command.CommandState
 import com.maddyhome.idea.vim.command.MappingMode
+import com.maddyhome.idea.vim.command.MotionType
 import com.maddyhome.idea.vim.group.MotionGroup
 import com.maddyhome.idea.vim.handler.MotionActionHandler
 import com.maddyhome.idea.vim.helper.inInsertMode
@@ -36,27 +36,56 @@ import com.maddyhome.idea.vim.option.OptionsManager
 import java.util.*
 import javax.swing.KeyStroke
 
-class MotionLastColumnAction : MotionEditorAction() {
+class MotionLastColumnAction : MotionActionHandler.ForEachCaret() {
+  override val motionType: MotionType = MotionType.INCLUSIVE
+
   override val mappingModes: Set<MappingMode> = MappingMode.NVO
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("$")
 
-  override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_MOT_INCLUSIVE)
+  override fun getOffset(editor: Editor,
+                         caret: Caret,
+                         context: DataContext,
+                         count: Int,
+                         rawCount: Int,
+                         argument: Argument?): Int {
+    var allow = false
+    if (editor.inInsertMode) {
+      allow = true
+    } else if (CommandState.getInstance(editor).mode == CommandState.Mode.VISUAL) {
+      val opt = OptionsManager.selection
+      if (opt.value != "old") {
+        allow = true
+      }
+    }
 
-  override fun makeActionHandler(): MotionActionHandler = MotionLastColumnActionHandler
+    return VimPlugin.getMotion().moveCaretToLineEndOffset(editor, caret, count - 1, allow)
+  }
+
+  override fun postMove(editor: Editor,
+                        caret: Caret,
+                        context: DataContext,
+                        cmd: Command) {
+    caret.vimLastColumn = MotionGroup.LAST_COLUMN
+  }
+
+  override fun preMove(editor: Editor,
+                       caret: Caret,
+                       context: DataContext,
+                       cmd: Command) {
+    caret.vimLastColumn = MotionGroup.LAST_COLUMN
+  }
 }
 
-class MotionLastColumnInsertAction : MotionEditorAction() {
+class MotionLastColumnInsertAction : MotionActionHandler.ForEachCaret() {
+  override val motionType: MotionType = MotionType.EXCLUSIVE
+
   override val mappingModes: Set<MappingMode> = MappingMode.I
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("<End>")
 
   override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_SAVE_STROKE)
 
-  override fun makeActionHandler(): MotionActionHandler = MotionLastColumnActionHandler
-}
-
-private object MotionLastColumnActionHandler : MotionActionHandler.ForEachCaret() {
   override fun getOffset(editor: Editor,
                          caret: Caret,
                          context: DataContext,

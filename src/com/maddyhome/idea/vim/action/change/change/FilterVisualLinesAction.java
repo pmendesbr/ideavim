@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.change;
@@ -21,7 +21,6 @@ package com.maddyhome.idea.vim.action.change.change;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.Command;
 import com.maddyhome.idea.vim.command.CommandFlags;
 import com.maddyhome.idea.vim.command.MappingMode;
@@ -37,21 +36,7 @@ import java.util.Set;
 /**
  * @author vlan
  */
-final public class FilterVisualLinesAction extends VimCommandAction {
-  @Contract(" -> new")
-  @NotNull
-  @Override
-  final protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        VimPlugin.getProcess().startFilterCommand(editor, context, cmd);
-        VimPlugin.getVisualMotion().resetVisual(editor);
-        return true;
-      }
-    };
-  }
-
+final public class FilterVisualLinesAction extends VimActionHandler.SingleExecution {
   @Contract(pure = true)
   @NotNull
   @Override
@@ -76,5 +61,12 @@ final public class FilterVisualLinesAction extends VimCommandAction {
   @Override
   final public EnumSet<CommandFlags> getFlags() {
     return EnumSet.of(CommandFlags.FLAG_MOT_LINEWISE);
+  }
+
+  @Override
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    VimPlugin.getProcess().startFilterCommand(editor, context, cmd);
+    VimPlugin.getVisualMotion().exitVisual(editor);
+    return true;
   }
 }

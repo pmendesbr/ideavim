@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.mark
@@ -22,15 +22,17 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.MotionEditorAction
 import com.maddyhome.idea.vim.command.Argument
 import com.maddyhome.idea.vim.command.CommandFlags
 import com.maddyhome.idea.vim.command.MappingMode
+import com.maddyhome.idea.vim.command.MotionType
 import com.maddyhome.idea.vim.handler.MotionActionHandler
 import java.util.*
 import javax.swing.KeyStroke
 
-class MotionGotoFileMarkLineAction : MotionEditorAction() {
+class MotionGotoFileMarkLineAction : MotionActionHandler.ForEachCaret() {
+  override val motionType: MotionType = MotionType.INCLUSIVE
+
   override val mappingModes: Set<MappingMode> = MappingMode.VO
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("'")
@@ -39,10 +41,22 @@ class MotionGotoFileMarkLineAction : MotionEditorAction() {
 
   override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_MOT_LINEWISE, CommandFlags.FLAG_SAVE_JUMP)
 
-  override fun makeActionHandler(): MotionActionHandler = MotionGotoFileMarkLineActionHandler
+  override fun getOffset(editor: Editor,
+                         caret: Caret,
+                         context: DataContext,
+                         count: Int,
+                         rawCount: Int,
+                         argument: Argument?): Int {
+    if (argument == null) return -1
+
+    val mark = argument.character
+    return VimPlugin.getMotion().moveCaretToFileMark(editor, mark, false)
+  }
 }
 
-class MotionGotoFileMarkLineNoSaveJumpAction : MotionEditorAction() {
+class MotionGotoFileMarkLineNoSaveJumpAction : MotionActionHandler.ForEachCaret() {
+  override val motionType: MotionType = MotionType.INCLUSIVE
+
   override val mappingModes: Set<MappingMode> = MappingMode.VO
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("g'")
@@ -51,10 +65,6 @@ class MotionGotoFileMarkLineNoSaveJumpAction : MotionEditorAction() {
 
   override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_MOT_LINEWISE)
 
-  override fun makeActionHandler(): MotionActionHandler = MotionGotoFileMarkLineActionHandler
-}
-
-private object MotionGotoFileMarkLineActionHandler : MotionActionHandler.ForEachCaret() {
   override fun getOffset(editor: Editor,
                          caret: Caret,
                          context: DataContext,

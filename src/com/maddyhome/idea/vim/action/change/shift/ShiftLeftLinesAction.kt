@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.change.shift
@@ -22,18 +22,16 @@ import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Caret
 import com.intellij.openapi.editor.Editor
 import com.maddyhome.idea.vim.VimPlugin
-import com.maddyhome.idea.vim.action.VimCommandAction
 import com.maddyhome.idea.vim.command.Argument
 import com.maddyhome.idea.vim.command.Command
 import com.maddyhome.idea.vim.command.CommandFlags
 import com.maddyhome.idea.vim.command.MappingMode
 import com.maddyhome.idea.vim.handler.ChangeEditorActionHandler
-import com.maddyhome.idea.vim.handler.VimActionHandler
 import java.util.*
 import javax.swing.KeyStroke
 
 
-class ShiftLeftLinesAction : VimCommandAction() {
+class ShiftLeftLinesAction : ChangeEditorActionHandler.ForEachCaret() {
   override val mappingModes: Set<MappingMode> = MappingMode.I
 
   override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("<C-D>")
@@ -42,20 +40,6 @@ class ShiftLeftLinesAction : VimCommandAction() {
 
   override val flags: EnumSet<CommandFlags> = EnumSet.of(CommandFlags.FLAG_SAVE_STROKE)
 
-  override fun makeActionHandler(): VimActionHandler = ShiftLeftLinesActionHandler
-}
-
-class ShiftLeftLinesNormalModeAction : VimCommandAction() {
-  override val mappingModes: Set<MappingMode> = MappingMode.N
-
-  override val keyStrokesSet: Set<List<KeyStroke>> = parseKeysSet("<<")
-
-  override val type: Command.Type = Command.Type.CHANGE
-
-  override fun makeActionHandler(): VimActionHandler = ShiftLeftLinesActionHandler
-}
-
-private object ShiftLeftLinesActionHandler : ChangeEditorActionHandler.ForEachCaret() {
   override fun execute(editor: Editor,
                        caret: Caret,
                        context: DataContext,

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package org.jetbrains.plugins.ideavim;
@@ -193,12 +193,15 @@ public abstract class VimTestCase extends UsefulTestCase {
   public void assertPosition(int line, int column) {
     final List<Caret> carets = myFixture.getEditor().getCaretModel().getAllCarets();
     assertEquals("Wrong amount of carets", 1, carets.size());
-    final LogicalPosition position = carets.get(0).getLogicalPosition();
-    assertEquals(position, new LogicalPosition(line, column));
+    final LogicalPosition actualPosition = carets.get(0).getLogicalPosition();
+    assertEquals(new LogicalPosition(line, column), actualPosition);
   }
 
   public void assertOffset(int... expectedOffsets) {
     final List<Caret> carets = myFixture.getEditor().getCaretModel().getAllCarets();
+    if (expectedOffsets.length == 2 && carets.size() == 1) {
+      assertEquals("Wrong amount of carets. Did you mean to use assertPosition?", expectedOffsets.length, carets.size());
+    }
     assertEquals("Wrong amount of carets", expectedOffsets.length, carets.size());
     for (int i = 0; i < expectedOffsets.length; i++) {
       assertEquals(expectedOffsets[i], carets.get(i).getOffset());

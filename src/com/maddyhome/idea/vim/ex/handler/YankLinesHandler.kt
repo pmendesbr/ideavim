@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.ex.handler
@@ -48,7 +48,7 @@ class YankLinesHandler : CommandHandler.SingleExecution() {
     for (caret in caretModel.allCarets) {
       val range = cmd.getTextRange(editor, caret, context, true)
       starts.add(range.startOffset)
-      ends.add(range.endOffset - 1)
+      ends.add(range.endOffset)
     }
 
     return VimPlugin.getYank().yankRange(editor,

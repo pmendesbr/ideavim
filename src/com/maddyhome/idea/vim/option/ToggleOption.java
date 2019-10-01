@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.option;
@@ -31,7 +31,7 @@ public class ToggleOption extends Option {
    * @param abbrev The short name
    * @param dflt   The default value
    */
-  ToggleOption(String name, String abbrev, boolean dflt) {
+  public ToggleOption(String name, String abbrev, boolean dflt) {
     super(name, abbrev);
 
     this.dflt = dflt;

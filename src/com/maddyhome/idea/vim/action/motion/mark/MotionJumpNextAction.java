@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.mark;
@@ -22,9 +22,9 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.MotionEditorAction;
 import com.maddyhome.idea.vim.command.Argument;
 import com.maddyhome.idea.vim.command.MappingMode;
+import com.maddyhome.idea.vim.command.MotionType;
 import com.maddyhome.idea.vim.handler.MotionActionHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +33,7 @@ import javax.swing.*;
 import java.util.List;
 import java.util.Set;
 
-public class MotionJumpNextAction extends MotionEditorAction {
+public class MotionJumpNextAction extends MotionActionHandler.ForEachCaret {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -46,19 +46,19 @@ public class MotionJumpNextAction extends MotionEditorAction {
     return parseKeysSet("<C-I>", "<Tab>");
   }
 
+  @Override
+  public int getOffset(@NotNull Editor editor,
+                       @NotNull Caret caret,
+                       @NotNull DataContext context,
+                       int count,
+                       int rawCount,
+                       @Nullable Argument argument) {
+    return VimPlugin.getMotion().moveCaretToJump(editor, count);
+  }
+
   @NotNull
   @Override
-  public MotionActionHandler makeActionHandler() {
-    return new MotionActionHandler.ForEachCaret() {
-      @Override
-      public int getOffset(@NotNull Editor editor,
-                           @NotNull Caret caret,
-                           @NotNull DataContext context,
-                           int count,
-                           int rawCount,
-                           @Nullable Argument argument) {
-        return VimPlugin.getMotion().moveCaretToJump(editor, caret, count);
-      }
-    };
+  public MotionType getMotionType() {
+    return MotionType.EXCLUSIVE;
   }
 }

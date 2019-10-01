@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.macro;
@@ -21,7 +21,6 @@ package com.maddyhome.idea.vim.action.macro;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.VimCommandAction;
 import com.maddyhome.idea.vim.command.*;
 import com.maddyhome.idea.vim.handler.VimActionHandler;
 import org.jetbrains.annotations.NotNull;
@@ -32,29 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class ToggleRecordingAction extends VimCommandAction {
-  @NotNull
-  @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        if (!CommandState.getInstance(editor).isRecording()) {
-          final Argument argument = cmd.getArgument();
-          if (argument == null) {
-            return false;
-          }
-          char reg = argument.getCharacter();
-          return VimPlugin.getRegister().startRecording(editor, reg);
-        }
-        else {
-          VimPlugin.getRegister().finishRecording(editor);
-
-          return true;
-        }
-      }
-    };
-  }
+public final class ToggleRecordingAction extends VimActionHandler.SingleExecution {
 
   @NotNull
   @Override
@@ -80,9 +57,20 @@ public class ToggleRecordingAction extends VimCommandAction {
     return Argument.Type.CHARACTER;
   }
 
-  @NotNull
   @Override
-  public EnumSet<CommandFlags> getFlags() {
-    return EnumSet.of(CommandFlags.FLAG_NO_ARG_RECORDING);
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    if (!CommandState.getInstance(editor).isRecording()) {
+      final Argument argument = cmd.getArgument();
+      if (argument == null) {
+        return false;
+      }
+      char reg = argument.getCharacter();
+      return VimPlugin.getRegister().startRecording(editor, reg);
+    }
+    else {
+      VimPlugin.getRegister().finishRecording(editor);
+
+      return true;
+    }
   }
 }

@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action.motion.leftright;
@@ -22,10 +22,10 @@ import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.editor.Caret;
 import com.intellij.openapi.editor.Editor;
 import com.maddyhome.idea.vim.VimPlugin;
-import com.maddyhome.idea.vim.action.MotionEditorAction;
 import com.maddyhome.idea.vim.command.Argument;
 import com.maddyhome.idea.vim.command.CommandFlags;
 import com.maddyhome.idea.vim.command.MappingMode;
+import com.maddyhome.idea.vim.command.MotionType;
 import com.maddyhome.idea.vim.group.MotionGroup;
 import com.maddyhome.idea.vim.handler.MotionActionHandler;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-public class MotionRightMatchCharAction extends MotionEditorAction {
+public class MotionRightMatchCharAction extends MotionActionHandler.ForEachCaret {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -58,28 +58,28 @@ public class MotionRightMatchCharAction extends MotionEditorAction {
   @NotNull
   @Override
   public EnumSet<CommandFlags> getFlags() {
-    return EnumSet.of(CommandFlags.FLAG_MOT_INCLUSIVE, CommandFlags.FLAG_ALLOW_DIGRAPH);
+    return EnumSet.of(CommandFlags.FLAG_ALLOW_DIGRAPH);
+  }
+
+  @Override
+  public int getOffset(@NotNull Editor editor,
+                       @NotNull Caret caret,
+                       @NotNull DataContext context,
+                       int count,
+                       int rawCount,
+                       @Nullable Argument argument) {
+    if (argument == null) {
+      VimPlugin.indicateError();
+      return caret.getOffset();
+    }
+    int res = VimPlugin.getMotion().moveCaretToNextCharacterOnLine(editor, caret, count, argument.getCharacter());
+    VimPlugin.getMotion().setLastFTCmd(MotionGroup.LAST_f, argument.getCharacter());
+    return res;
   }
 
   @NotNull
   @Override
-  public MotionActionHandler makeActionHandler() {
-    return new MotionActionHandler.ForEachCaret() {
-      @Override
-      public int getOffset(@NotNull Editor editor,
-                           @NotNull Caret caret,
-                           @NotNull DataContext context,
-                           int count,
-                           int rawCount,
-                           @Nullable Argument argument) {
-        if (argument == null) {
-          VimPlugin.indicateError();
-          return caret.getOffset();
-        }
-        int res = VimPlugin.getMotion().moveCaretToNextCharacterOnLine(editor, caret, count, argument.getCharacter());
-        VimPlugin.getMotion().setLastFTCmd(MotionGroup.LAST_f, argument.getCharacter());
-        return res;
-      }
-    };
+  public MotionType getMotionType() {
+    return MotionType.INCLUSIVE;
   }
 }

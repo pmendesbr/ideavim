@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action;
@@ -25,30 +25,29 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.util.EditorUtil;
 import com.intellij.openapi.fileEditor.ex.FileEditorManagerEx;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.maddyhome.idea.vim.KeyHandler;
+import com.maddyhome.idea.vim.RegisterActions;
 import com.maddyhome.idea.vim.VimPlugin;
 import com.maddyhome.idea.vim.action.change.insert.InsertExitModeAction;
 import com.maddyhome.idea.vim.command.CommandState;
+import com.maddyhome.idea.vim.handler.EditorActionHandlerBase;
 import com.maddyhome.idea.vim.helper.CommandStateHelper;
 import com.maddyhome.idea.vim.helper.EditorDataContext;
 import com.maddyhome.idea.vim.helper.EditorHelper;
 import com.maddyhome.idea.vim.key.ShortcutOwner;
 import com.maddyhome.idea.vim.option.ListOption;
 import com.maddyhome.idea.vim.option.OptionsManager;
-import one.util.streamex.StreamEx;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static java.awt.event.KeyEvent.*;
 
@@ -100,6 +99,10 @@ public class VimShortcutKeyAction extends AnAction implements DumbAware {
       // Should we use HelperKt.getTopLevelEditor(editor) here, as we did in former EditorKeyHandler?
       try {
         KeyHandler.getInstance().handleKey(editor, keyStroke, new EditorDataContext(editor));
+      }
+      catch (ProcessCanceledException ignored) {
+        // Control-flow exceptions (like ProcessCanceledException) should never be logged
+        // See {@link com.intellij.openapi.diagnostic.Logger.checkException}
       }
       catch (Throwable throwable) {
         ourLogger.error(throwable);
@@ -176,9 +179,9 @@ public class VimShortcutKeyAction extends AnAction implements DumbAware {
     if (values == null) return false;
 
     return values.stream().anyMatch(actionId -> {
-      final AnAction action = ActionManager.getInstance().getAction(actionId);
-      if (!(action instanceof VimCommandAction)) return false;
-      return ((VimCommandAction)action).getKeyStrokesSet().stream()
+      final EditorActionHandlerBase action = RegisterActions.findAction(actionId);
+      if (action == null) return false;
+      return action.getKeyStrokesSet().stream()
         .anyMatch(ks -> !ks.isEmpty() && ks.get(0).equals(keyStroke));
     });
   }
@@ -195,7 +198,8 @@ public class VimShortcutKeyAction extends AnAction implements DumbAware {
     final Project project = editor.getProject();
     if (project == null) return false;
     final FileEditorManagerEx fileEditorManager = FileEditorManagerEx.getInstanceEx(project);
-    return StreamEx.of(fileEditorManager.getAllEditors())
+    if (fileEditorManager == null) return false;
+    return Arrays.stream(fileEditorManager.getAllEditors())
       .anyMatch(fileEditor -> editor.equals(EditorUtil.getEditorEx(fileEditor)));
   }
 

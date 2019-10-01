@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 @file:Suppress("RemoveCurlyBracesFromTemplate")
@@ -219,6 +219,22 @@ zxcvbn${c}werty
                     l rocks and lavender and tufted grass,[ additional symbols]
                     ere it was settled on some sodden sand
                     rd by the torrent of a mountain pass.
+                    """.trimIndent(), SelectionType.BLOCK_WISE)
+  }
+
+  fun `test block yank with dollar motion backward`() {
+    doTest(parseKeys("<C-V>k$", "y"),
+      """
+                            A Discovery
+
+                            I found it in a legendary land
+                            al${c}l rocks and lavender and tufted grass,[ additional symbols]
+                            where it was settled on some sodden sand
+                            hard by the torrent of a mountain pass.
+                            """.trimIndent(),
+      """
+                    found it in a legendary land
+                    l rocks and lavender and tufted grass,[ additional symbols]
                     """.trimIndent(), SelectionType.BLOCK_WISE)
   }
 

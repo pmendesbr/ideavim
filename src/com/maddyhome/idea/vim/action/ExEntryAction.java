@@ -13,7 +13,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
 package com.maddyhome.idea.vim.action;
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 
-public class ExEntryAction extends VimCommandAction {
+public class ExEntryAction extends VimActionHandler.SingleExecution {
   @NotNull
   @Override
   public Set<MappingMode> getMappingModes() {
@@ -50,16 +50,10 @@ public class ExEntryAction extends VimCommandAction {
     return Command.Type.OTHER_READONLY;
   }
 
-  @NotNull
   @Override
-  protected VimActionHandler makeActionHandler() {
-    return new VimActionHandler.SingleExecution() {
-      @Override
-      public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
-        VimPlugin.getProcess().startExCommand(editor, context, cmd);
+  public boolean execute(@NotNull Editor editor, @NotNull DataContext context, @NotNull Command cmd) {
+    VimPlugin.getProcess().startExCommand(editor, context, cmd);
 
-        return true;
-      }
-    };
+    return true;
   }
 }
